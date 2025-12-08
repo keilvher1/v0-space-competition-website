@@ -1,9 +1,9 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Rocket, Star, Trophy, Users, Calendar, MapPin, Mail } from "lucide-react"
+import { Rocket, Star, Trophy, Users, Calendar, MapPin, Mail, MessageCircle, HelpCircle } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
+import Link from "next/link"
 
 export default function HomePage() {
   const REGISTRATION_LINK = "https://forms.gle/EEJ1ijFPnHHQHYhL9"
@@ -31,15 +31,14 @@ export default function HomePage() {
               <a href="#rules" className="text-muted-foreground hover:text-primary transition-colors">
                 대회 규칙
               </a>
-              <a href="#register" className="text-muted-foreground hover:text-primary transition-colors">
-                참가 신청
-              </a>
+              <Link href="/announcements" className="text-muted-foreground hover:text-primary transition-colors">
+                공지사항
+              </Link>
+              <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+                FAQ
+              </Link>
             </div>
-            <Button className="neon-glow" asChild>
-              <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
-                참가하기
-              </a>
-            </Button>
+            <UserNav />
           </nav>
         </div>
       </header>
@@ -77,6 +76,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 대회 소개 섹션 */}
       <section className="py-20 px-4 bg-muted/20">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -140,6 +140,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Video Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
@@ -337,7 +338,7 @@ export default function HomePage() {
                 <div className="text-6xl mb-4">🏆</div>
                 <h3 className="text-2xl font-bold mb-4 text-primary">트랙별 (청소년, 일반 트랙) 수상자</h3>
                 <div className="space-y-2 text-muted-foreground">
-                  <p className="text-lg">✨ 실패 도서 출간 저자 기회 제공</p>
+                  <p className="text-lg">실패 도서 출간 저자 기회 제공</p>
                   <p className="text-lg">🏆 트로피 수여</p>
                 </div>
               </div>
@@ -433,6 +434,31 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="py-16 px-4 bg-muted/20">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Link href="/announcements">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 hover:neon-glow transition-all duration-300 cursor-pointer h-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <MessageCircle className="h-8 w-8 text-primary" />
+                  <h3 className="text-2xl font-bold">공지사항</h3>
+                </div>
+                <p className="text-muted-foreground">대회 관련 최신 소식과 공지사항을 확인하세요.</p>
+              </Card>
+            </Link>
+            <Link href="/faq">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-secondary/20 hover:purple-glow transition-all duration-300 cursor-pointer h-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <HelpCircle className="h-8 w-8 text-secondary" />
+                  <h3 className="text-2xl font-bold">자주 묻는 질문</h3>
+                </div>
+                <p className="text-muted-foreground">대회에 관한 자주 묻는 질문과 답변을 확인하세요.</p>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section id="register" className="py-20 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
         <div className="container mx-auto text-center">
@@ -441,57 +467,41 @@ export default function HomePage() {
             <br />
             <span className="text-primary">우주에 알려주세요!</span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            실패를 통해 성장한 경험, 예상치 못한 결과로 얻은 깨달음, 그 모든 이야기가 소중합니다.
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            지금 바로 참가 신청을 하고, 실패를 축하하는 축제의 주인공이 되세요!
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="text-lg px-12 py-4 neon-glow" asChild>
-              <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
-                <Rocket className="mr-2 h-5 w-5" />
-                참가 신청하기
-              </a>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-lg px-8 py-4 border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
-              asChild
-            >
-              <a href="#about">더 자세히 알아보기</a>
-            </Button>
-          </div>
+          <Button size="lg" className="text-xl px-12 py-6 neon-glow" asChild>
+            <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
+              <Rocket className="mr-2 h-6 w-6" />
+              참가 신청하기
+            </a>
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-12 px-4">
+      <footer className="py-12 px-4 border-t border-border/50">
         <div className="container mx-auto">
-          <div className="text-center mb-8">
-            <h3 className="text-lg font-semibold mb-4 text-muted-foreground">주최 · 주관</h3>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-              <div className="text-center">
-                <img src="/images/moe-logo.png" alt="교육부 로고" className="h-20 w-auto mx-auto" />
-              </div>
-              <div className="text-center">
-                <img src="/images/pohang-logo.jpeg" alt="포항시 로고" className="h-20 w-auto mx-auto" />
-              </div>
-              <div className="text-center">
-                <img src="/images/hgu-logo.png" alt="한동대학교 로고" className="h-20 w-auto mx-auto" />
-              </div>
-              <div className="text-center">
-                <img src="/images/parangteul-logo.png" alt="파랑뜰 로고" className="h-20 w-auto mx-auto" />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center mt-8">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
               <Rocket className="h-6 w-6 text-primary" />
               <span className="text-lg font-bold">제1회 우주 최고 실패 대회</span>
             </div>
-            <div className="text-center text-sm text-muted-foreground">
-              © 2025 우주 최고 실패 대회. 실패를 통해 성장하는 모든 이들을 응원합니다.
+            <div className="flex flex-wrap justify-center gap-8">
+              <div className="flex items-center gap-2">
+                <img src="/images/moe-logo.png" alt="교육부" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/pohang-logo.jpeg" alt="포항시" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/hgu-logo.png" alt="한동대학교" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/parangteul-logo.png" alt="파랑뜰" className="h-10 object-contain" />
+              </div>
             </div>
+            <div className="text-sm text-muted-foreground">© 2025 우주 최고 실패 대회. All rights reserved.</div>
           </div>
         </div>
       </footer>
