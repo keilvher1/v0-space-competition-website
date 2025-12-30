@@ -1,40 +1,123 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Rocket, Star, Trophy, Users, Calendar, MapPin, Mail } from "lucide-react"
+import { Rocket, Star, Trophy, Users, Calendar, MapPin, Mail, ArrowLeft, MessageCircle, HelpCircle } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 import Link from "next/link"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { createClient } from "@/lib/supabase/server"
+import { notFound } from "next/navigation"
 
-export default function FirstCompetitionPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>
+}
+
+export default async function CompetitionPage({ params }: PageProps) {
+  const { slug } = await params
+  const supabase = await createClient()
+
+  // slug 또는 edition으로 대회 찾기
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("*")
+    .or(`slug.eq.${slug},edition.eq.${slug}`)
+    .single()
+
+  if (!competition) {
+    notFound()
+  }
+
   const REGISTRATION_LINK = "https://forms.gle/EEJ1ijFPnHHQHYhL9"
+  const isOpen = competition.status === "open"
 
   return (
     <div className="min-h-screen bg-background space-pattern">
-      <Header />
+      {/* Header */}
+      <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <Rocket className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold text-glow">우주 최고 실패 대회</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-6">
+              <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
+                대회 소개
+              </a>
+              <a href="#schedule" className="text-muted-foreground hover:text-primary transition-colors">
+                일정
+              </a>
+              <a href="#prizes" className="text-muted-foreground hover:text-primary transition-colors">
+                시상
+              </a>
+              <a href="#rules" className="text-muted-foreground hover:text-primary transition-colors">
+                대회 규칙
+              </a>
+              <Link href="/announcements" className="text-muted-foreground hover:text-primary transition-colors">
+                공지사항
+              </Link>
+              <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+                FAQ
+              </Link>
+            </div>
+            <UserNav />
+          </nav>
+        </div>
+      </header>
+
+      {/* Back Button */}
+      <div className="container mx-auto px-4 py-4">
+        <Button variant="ghost" asChild>
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            전체 대회 목록으로
+          </Link>
+        </Button>
+      </div>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      <section className="py-16 px-4">
         <div className="container mx-auto text-center">
+          <Badge className="mb-6 text-3xl px-12 py-4 bg-secondary/10 text-secondary border-secondary/30">
+            🚀 제{competition.edition}회
+          </Badge>
           <h1 className="text-6xl md:text-8xl font-bold mb-6 text-glow">
             <span className="text-secondary">우주</span> 최고
             <br />
             <span className="text-primary">실패</span> 대회
           </h1>
           <p className="text-2xl md:text-3xl text-secondary font-semibold mb-8 max-w-3xl mx-auto leading-relaxed">
-            실패, 결과가 아닌 질문으로 바꾸다
+            {competition.description || "실패, 결과가 아닌 질문으로 바꾸다"}
           </p>
-          <Badge className="text-lg px-6 py-3 bg-muted text-muted-foreground border-muted-foreground/30">
-            본 대회는 종료되었습니다
-          </Badge>
+
+          {isOpen && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button size="lg" className="text-lg px-8 py-4 neon-glow" asChild>
+                <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
+                  <Rocket className="mr-2 h-5 w-5" />
+                  지금 참가하기
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-4 border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
+                asChild
+              >
+                <a href="#rules">대회 규칙 보기</a>
+              </Button>
+            </div>
+          )}
+
+          {!isOpen && (
+            <Badge className="text-lg px-6 py-3 bg-muted text-muted-foreground">이 대회는 종료되었습니다</Badge>
+          )}
         </div>
       </section>
 
       {/* 대회 소개 섹션 */}
-      <section className="py-20 px-4 bg-muted/20">
+      <section id="about" className="py-20 px-4 bg-muted/20">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* 대회 소개 */}
             <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 hover:neon-glow transition-all duration-300">
               <div className="mb-6">
                 <Badge className="text-lg px-4 py-2 bg-primary/20 text-primary border-primary/30 mb-4">대회 소개</Badge>
@@ -46,7 +129,7 @@ export default function FirstCompetitionPage() {
               </div>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p className="text-lg">
-                  제1회 우주 최고 실패 대회는{" "}
+                  제{competition.edition}회 우주 최고 실패 대회는{" "}
                   <span className="font-semibold text-foreground">
                     "단순히 실패를 극복하고 결국 희망과 웃음으로 마무리하는 자리"가 아닙니다.
                   </span>
@@ -61,7 +144,6 @@ export default function FirstCompetitionPage() {
               </div>
             </Card>
 
-            {/* 대회 철학과 목적 */}
             <Card className="p-8 bg-card/50 backdrop-blur-sm border-secondary/20 hover:purple-glow transition-all duration-300">
               <div className="mb-6">
                 <Badge className="text-lg px-4 py-2 bg-secondary/20 text-secondary border-secondary/30 mb-4">
@@ -95,31 +177,32 @@ export default function FirstCompetitionPage() {
       </section>
 
       {/* Video Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
-              대회 <span className="text-primary">영상</span>
-            </h2>
-            <p className="text-xl text-muted-foreground">대회의 의미를 영상으로 만나보세요</p>
-          </div>
+      {competition.video_url && (
+        <section className="py-20 px-4">
+          <div className="container mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
+                대회 <span className="text-primary">영상</span>
+              </h2>
+              <p className="text-xl text-muted-foreground">대회의 의미를 영상으로 만나보세요</p>
+            </div>
 
-          <div className="max-w-3xl mx-auto">
-            <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
-              <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full rounded-lg"
-                  src="https://player.vimeo.com/video/1123631620?h=&title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
-                  title="제1회 우주 최고 실패 대회 영상"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-                  allowFullScreen
-                />
-              </div>
-            </Card>
+            <div className="max-w-3xl mx-auto">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
+                <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
+                  <iframe
+                    className="absolute top-0 left-0 w-full h-full rounded-lg"
+                    src={`${competition.video_url}?title=0&byline=0&portrait=0&badge=0`}
+                    title={`제${competition.edition}회 우주 최고 실패 대회 영상`}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </Card>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Stats Section */}
       <section className="py-16 px-4">
@@ -148,7 +231,7 @@ export default function FirstCompetitionPage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
@@ -201,8 +284,8 @@ export default function FirstCompetitionPage() {
           <div className="max-w-3xl mx-auto">
             <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
               <img
-                src="/images/poster.jpg"
-                alt="제1회 우주 최고 실패 대회 포스터"
+                src={competition.cover_image || "/images/poster.jpg"}
+                alt={`제${competition.edition}회 우주 최고 실패 대회 포스터`}
                 className="w-full h-auto rounded-lg shadow-2xl"
               />
             </Card>
@@ -251,7 +334,9 @@ export default function FirstCompetitionPage() {
                 <div className="flex items-start gap-2 text-sm text-muted-foreground mt-3 bg-muted/30 p-3 rounded-lg">
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div>
-                    <div className="font-semibold mb-1">본선 장소: 환동해지역혁신원 파랑뜰 2층 드림홀</div>
+                    <div className="font-semibold mb-1">
+                      본선 장소: {competition.location || "환동해지역혁신원 파랑뜰 2층 드림홀"}
+                    </div>
                     <div>경상북도 포항시 북구 장성로 109</div>
                   </div>
                 </div>
@@ -389,83 +474,80 @@ export default function FirstCompetitionPage() {
         </div>
       </section>
 
-      {/* Organizers Section */}
-      <section className="py-20 px-4 bg-muted/20">
+      {/* Links Section */}
+      <section className="py-16 px-4 bg-muted/20">
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
-              <span className="text-secondary">주최 · 주관</span>
-            </h2>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-              <div className="flex flex-col items-center">
-                <img
-                  src="/images/logo-visionq.png"
-                  alt="비전큐"
-                  className="h-16 md:h-20 object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <p className="text-sm text-muted-foreground mt-2">비전큐</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <img
-                  src="/images/logo-handong.png"
-                  alt="한동대학교"
-                  className="h-16 md:h-20 object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <p className="text-sm text-muted-foreground mt-2">한동대학교</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <img
-                  src="/images/logo-region.png"
-                  alt="환동해지역혁신원"
-                  className="h-16 md:h-20 object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <p className="text-sm text-muted-foreground mt-2">환동해지역혁신원</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <img
-                  src="/images/logo-pohang.png"
-                  alt="포항시"
-                  className="h-16 md:h-20 object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <p className="text-sm text-muted-foreground mt-2">포항시</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Link href="/announcements">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 hover:neon-glow transition-all duration-300 cursor-pointer h-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <MessageCircle className="h-8 w-8 text-primary" />
+                  <h3 className="text-2xl font-bold">공지사항</h3>
+                </div>
+                <p className="text-muted-foreground">대회 관련 최신 소식과 공지사항을 확인하세요.</p>
+              </Card>
+            </Link>
+            <Link href="/faq">
+              <Card className="p-8 bg-card/50 backdrop-blur-sm border-secondary/20 hover:purple-glow transition-all duration-300 cursor-pointer h-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <HelpCircle className="h-8 w-8 text-secondary" />
+                  <h3 className="text-2xl font-bold">자주 묻는 질문</h3>
+                </div>
+                <p className="text-muted-foreground">대회에 관한 자주 묻는 질문과 답변을 확인하세요.</p>
+              </Card>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <Card className="p-12 bg-gradient-to-b from-primary/20 to-primary/5 border-primary/30 neon-glow max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold mb-6 text-glow">
-              준비되셨나요? <span className="text-primary">지금 참가하세요!</span>
+      {isOpen && (
+        <section id="register" className="py-20 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
+          <div className="container mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
+              당신의 실패 스토리를
+              <br />
+              <span className="text-primary">우주에 알려주세요!</span>
             </h2>
-            <p className="text-xl text-muted-foreground mb-8">당신의 실패가 누군가에게 용기가 됩니다</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-12 py-6 neon-glow" asChild>
-                <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
-                  <Rocket className="mr-2 h-6 w-6" />
-                  참가 신청하기
-                </a>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-6 border-secondary text-secondary hover:bg-secondary/10 bg-transparent"
-                asChild
-              >
-                <Link href="/competitions">다른 대회 보기</Link>
-              </Button>
-            </div>
-          </Card>
-        </div>
-      </section>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              지금 바로 참가 신청을 하고, 실패를 축하하는 축제의 주인공이 되세요!
+            </p>
+            <Button size="lg" className="text-xl px-12 py-6 neon-glow" asChild>
+              <a href={REGISTRATION_LINK} target="_blank" rel="noopener noreferrer">
+                <Rocket className="mr-2 h-6 w-6" />
+                참가 신청하기
+              </a>
+            </Button>
+          </div>
+        </section>
+      )}
 
-      <Footer />
+      {/* Footer */}
+      <footer className="py-12 px-4 border-t border-border/50">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Rocket className="h-6 w-6 text-primary" />
+              <span className="text-lg font-bold">제{competition.edition}회 우주 최고 실패 대회</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-8">
+              <div className="flex items-center gap-2">
+                <img src="/images/moe-logo.png" alt="교육부" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/pohang-logo.jpeg" alt="포항시" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/hgu-logo.png" alt="한동대학교" className="h-10 object-contain" />
+              </div>
+              <div className="flex items-center gap-2">
+                <img src="/images/parangteul-logo.png" alt="파랑뜰" className="h-10 object-contain" />
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground">© 2025 우주 최고 실패 대회. All rights reserved.</div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

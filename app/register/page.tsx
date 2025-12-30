@@ -38,7 +38,6 @@ export default function RegisterPage() {
       }
       setUser(user)
 
-      // 이미 신청했는지 확인
       const { data: existingReg } = await supabase.from("registrations").select("id").eq("user_id", user.id).single()
 
       if (existingReg) {
@@ -56,7 +55,6 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      // 대회 정보 가져오기 (첫 번째 대회)
       const { data: competition } = await supabase.from("competitions").select("id").eq("status", "open").single()
 
       if (!competition) {
@@ -129,7 +127,7 @@ export default function RegisterPage() {
           <nav className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <Rocket className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-glow">제1회 우주 최고 실패 대회</span>
+              <span className="text-xl font-bold text-glow">우주 최고 실패 대회</span>
             </Link>
             <Button variant="ghost" asChild>
               <Link href="/">
