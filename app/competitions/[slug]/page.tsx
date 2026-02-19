@@ -187,12 +187,12 @@ export default async function CompetitionPage({ params }: PageProps) {
               <p className="text-xl text-muted-foreground">대회의 의미를 영상으로 만나보세요</p>
             </div>
 
-            <div className="max-w-3xl mx-auto">
+              <div className="max-w-3xl mx-auto">
               <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
                 <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
                   <iframe
                     className="absolute top-0 left-0 w-full h-full rounded-lg"
-                    src={`${competition.video_url}?title=0&byline=0&portrait=0&badge=0`}
+                    src="https://player.vimeo.com/video/1123631620?title=0&byline=0&portrait=0&badge=0"
                     title={`제${competition.edition}회 우주 최고 실패 대회 영상`}
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowFullScreen
