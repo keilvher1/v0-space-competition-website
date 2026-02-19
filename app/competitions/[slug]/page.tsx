@@ -189,7 +189,7 @@ export default async function CompetitionPage({ params }: PageProps) {
 
               <div className="max-w-3xl mx-auto">
               <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
-                <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
+                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                   <iframe
                     className="absolute top-0 left-0 w-full h-full rounded-lg"
                     src="https://player.vimeo.com/video/1123631620?title=0&byline=0&portrait=0&badge=0"
@@ -283,6 +283,7 @@ export default async function CompetitionPage({ params }: PageProps) {
 
           <div className="max-w-3xl mx-auto">
             <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={competition.cover_image || "/images/poster.jpg"}
                 alt={`제${competition.edition}회 우주 최고 실패 대회 포스터`}

@@ -107,7 +107,7 @@ export default async function HomePage() {
 
           <div className="max-w-3xl mx-auto">
             <Card className="p-8 bg-card/50 backdrop-blur-sm border-primary/20 neon-glow">
-              <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
+              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                 <iframe
                   className="absolute top-0 left-0 w-full h-full rounded-lg"
                   src="https://player.vimeo.com/video/1123631620?title=0&byline=0&portrait=0&badge=0"
@@ -356,6 +356,7 @@ export default async function HomePage() {
             <Card className="p-8 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 neon-glow">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div className="order-2 md:order-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/book-cover.png"
                     alt="우주실패실록 책 표지"
