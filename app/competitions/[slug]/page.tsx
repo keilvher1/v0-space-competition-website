@@ -15,11 +15,11 @@ export default async function CompetitionPage({ params }: PageProps) {
   const { slug } = await params
   const supabase = await createClient()
 
-  // slug 또는 edition으로 대회 찾기
+  // slug로 대회 찾기
   const { data: competition } = await supabase
     .from("competitions")
     .select("*")
-    .or(`slug.eq.${slug},edition.eq.${slug}`)
+    .eq("slug", slug)
     .single()
 
   if (!competition) {
