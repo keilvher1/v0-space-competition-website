@@ -309,7 +309,7 @@ export default async function HomePage() {
                 <img src="/images/moe-logo.png" alt="교육부" className="h-10 object-contain" />
               </div>
               <div className="flex items-center gap-2">
-                <img src="/images/pohang-logo.jpeg" alt="포항시" className="h-10 object-contain" />
+                <img src="/images/pohang-logo.png" alt="포항시" className="h-10 object-contain" />
               </div>
               <div className="flex items-center gap-2">
                 <img src="/images/hgu-logo.png" alt="한동대학교" className="h-10 object-contain" />
