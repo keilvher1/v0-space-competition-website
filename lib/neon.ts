@@ -62,10 +62,17 @@ export interface CompetitionOrganizer {
 }
 
 export async function getCompetitionBySlug(slug: string): Promise<Competition | null> {
-  const result = await sql<Competition[]>`
-    SELECT * FROM competitions WHERE slug = ${slug}
-  `
-  return result.length > 0 ? result[0] : null
+  try {
+    const result = await sql<Competition[]>`
+      SELECT * FROM competitions WHERE slug = ${slug}
+    `
+    console.log("[v0] Query result type:", typeof result, "is array:", Array.isArray(result))
+    console.log("[v0] Query result:", result)
+    return result && result.length > 0 ? result[0] : null
+  } catch (error) {
+    console.error("[v0] getCompetitionBySlug error:", error)
+    return null
+  }
 }
 
 export async function getCompetitionSchedule(competitionId: number): Promise<CompetitionSchedule[]> {
