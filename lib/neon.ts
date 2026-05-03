@@ -66,11 +66,9 @@ export async function getCompetitionBySlug(slug: string): Promise<Competition | 
     const result = await sql<Competition[]>`
       SELECT * FROM competitions WHERE slug = ${slug}
     `
-    console.log("[v0] Query result type:", typeof result, "is array:", Array.isArray(result))
-    console.log("[v0] Query result:", result)
     return result && result.length > 0 ? result[0] : null
   } catch (error) {
-    console.error("[v0] getCompetitionBySlug error:", error)
+    console.error("getCompetitionBySlug error:", error)
     return null
   }
 }
@@ -102,4 +100,16 @@ export async function getCompetitionOrganizers(competitionId: number): Promise<C
     SELECT * FROM competition_organizers 
     WHERE competition_id = ${competitionId}
   `
+}
+
+export async function getAllCompetitions(): Promise<Competition[]> {
+  try {
+    const result = await sql<Competition[]>`
+      SELECT * FROM competitions ORDER BY edition DESC
+    `
+    return result || []
+  } catch (error) {
+    console.error("[v0] getAllCompetitions error:", error)
+    return []
+  }
 }

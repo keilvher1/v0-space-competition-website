@@ -4,19 +4,17 @@ import { Badge } from "@/components/ui/badge"
 import { Rocket, Star, Trophy, Users, Calendar, ArrowRight } from "lucide-react"
 import { UserNav } from "@/components/user-nav"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
+import { getAllCompetitions } from "@/lib/neon"
 
 export default async function HomePage() {
-  const supabase = await createClient()
-
-  // 모든 대회 회차 가져오기 (최신순)
-  const { data: competitions } = await supabase.from("competitions").select("*").order("edition", { ascending: false })
+  // 모든 대회 회차 가져오기 (최신순) - Neon에서 가져옴
+  const competitions = await getAllCompetitions()
 
   // 현재 진행 중인 대회 (가장 최신)
-  const currentCompetition = competitions?.find((c) => c.status === "ongoing") || competitions?.[0]
+  const currentCompetition = competitions.find((c) => c.status === "open" || c.status === "ongoing") || competitions[0]
 
   // 이전 대회들
-  const pastCompetitions = competitions?.filter((c) => c.id !== currentCompetition?.id) || []
+  const pastCompetitions = competitions.filter((c) => c.id !== currentCompetition?.id)
 
   return (
     <div className="min-h-screen bg-background space-pattern">
@@ -66,11 +64,11 @@ export default async function HomePage() {
           {currentCompetition && (
             <div className="mb-8">
               <Badge className="text-lg px-6 py-2 bg-primary/20 text-primary border-primary/30 mb-4">
-                {currentCompetition.status === "ongoing" ? "🔥 현재 모집 중" : "📅 예정된 대회"}
+                {currentCompetition.status === "open" || currentCompetition.status === "ongoing" ? "🔥 현재 모집 중" : "📅 종료된 대회"}
               </Badge>
               <p className="text-xl text-muted-foreground mb-4">
                 제{currentCompetition.edition}회 대회가{" "}
-                {currentCompetition.status === "ongoing" ? "진행 중입니다!" : "예정되어 있습니다."}
+                {currentCompetition.status === "open" || currentCompetition.status === "ongoing" ? "진행 중입니다!" : "종료되었습니다."}
               </p>
             </div>
           )}
@@ -211,9 +209,9 @@ export default async function HomePage() {
                     <div>
                       <div className="flex items-center gap-3 mb-3">
                         <Badge className="bg-primary text-primary-foreground">
-                          {currentCompetition.status === "ongoing"
+                          {currentCompetition.status === "open" || currentCompetition.status === "ongoing"
                             ? "모집 중"
-                            : currentCompetition.status === "completed"
+                            : currentCompetition.status === "closed" || currentCompetition.status === "completed"
                               ? "종료"
                               : "예정"}
                         </Badge>
@@ -223,10 +221,10 @@ export default async function HomePage() {
                       </div>
                       <h3 className="text-2xl font-bold mb-2">{currentCompetition.title}</h3>
                       <p className="text-muted-foreground">{currentCompetition.description}</p>
-                      {currentCompetition.start_date && (
+                      {currentCompetition.registration_start && (
                         <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(currentCompetition.start_date).toLocaleDateString("ko-KR")}</span>
+                          <span>{new Date(currentCompetition.registration_start).toLocaleDateString("ko-KR")}</span>
                         </div>
                       )}
                     </div>
@@ -247,7 +245,7 @@ export default async function HomePage() {
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <Badge variant="outline" className="text-muted-foreground">
-                          {competition.status === "completed" ? "종료" : competition.status}
+                          {competition.status === "completed" || competition.status === "closed" ? "종료" : competition.status}
                         </Badge>
                         <Badge variant="outline">제{competition.edition}회</Badge>
                       </div>
@@ -286,7 +284,7 @@ export default async function HomePage() {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             실패를 축하하는 축제에 참여하고, 당신만의 이야기를 공유하세요!
           </p>
-          {currentCompetition && currentCompetition.status === "ongoing" && (
+          {currentCompetition && (currentCompetition.status === "open" || currentCompetition.status === "ongoing") && (
             <Button size="lg" className="text-xl px-12 py-6 neon-glow" asChild>
               <Link href={`/competitions/${currentCompetition.slug || currentCompetition.edition}`}>
                 <Rocket className="mr-2 h-6 w-6" />제{currentCompetition.edition}회 대회 참가하기
