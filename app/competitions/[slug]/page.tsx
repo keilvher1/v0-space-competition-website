@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge"
 import { Rocket, Star, Trophy, Users, Calendar, MapPin, Mail, ArrowLeft, MessageCircle, HelpCircle } from "lucide-react"
 import { UserNav } from "@/components/user-nav"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { getCompetitionBySlug, getCompetitionSchedule, getCompetitionAwards, getCompetitionCategories, getCompetitionOrganizers } from "@/lib/neon"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -13,18 +13,19 @@ interface PageProps {
 
 export default async function CompetitionPage({ params }: PageProps) {
   const { slug } = await params
-  const supabase = await createClient()
 
   // slug로 대회 찾기
-  const { data: competition } = await supabase
-    .from("competitions")
-    .select("*")
-    .eq("slug", slug)
-    .single()
+  const competition = await getCompetitionBySlug(slug)
 
   if (!competition) {
     notFound()
   }
+
+  // 관련 데이터 가져오기
+  const schedule = await getCompetitionSchedule(competition.id)
+  const awards = await getCompetitionAwards(competition.id)
+  const categories = await getCompetitionCategories(competition.id)
+  const organizers = await getCompetitionOrganizers(competition.id)
 
   const REGISTRATION_LINK = "https://forms.gle/EEJ1ijFPnHHQHYhL9"
   const isOpen = competition.status === "open"
@@ -304,52 +305,37 @@ export default async function CompetitionPage({ params }: PageProps) {
 
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-                <div className="flex items-center gap-4 mb-4">
-                  <Calendar className="h-6 w-6 text-primary" />
-                  <Badge className="bg-primary/20 text-primary">접수 기간</Badge>
-                </div>
-                <h3 className="text-xl font-bold mb-2">참가 신청</h3>
-                <p className="text-muted-foreground mb-2">~ 2025년 10월 27일 (월)</p>
-                <p className="text-sm text-muted-foreground mb-2">1분 분량의 영상 또는 서면</p>
-              </Card>
-
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-secondary/20">
-                <div className="flex items-center gap-4 mb-4">
-                  <Star className="h-6 w-6 text-secondary" />
-                  <Badge className="bg-secondary/20 text-secondary">예선 발표</Badge>
-                </div>
-                <h3 className="text-xl font-bold mb-2">예선 합격자 발표</h3>
-                <p className="text-muted-foreground mb-2">2025년 11월 4일 (화)</p>
-              </Card>
-
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20">
-                <div className="flex items-center gap-4 mb-4">
-                  <Trophy className="h-6 w-6 text-primary" />
-                  <Badge className="bg-primary/20 text-primary">본선</Badge>
-                </div>
-                <h3 className="text-xl font-bold mb-2">본선</h3>
-                <p className="text-muted-foreground mb-2">2025년 11월 8일 (토) 13:00 ~ 17:00</p>
-                <p className="text-sm text-muted-foreground mb-2">오프라인 PT로 진행</p>
-                <div className="flex items-start gap-2 text-sm text-muted-foreground mt-3 bg-muted/30 p-3 rounded-lg">
-                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="font-semibold mb-1">
-                      본선 장소: {competition.location || "환동해지역혁신원 파랑뜰 2층 드림홀"}
+              {schedule.length > 0 ? (
+                schedule.map((item, index) => (
+                  <Card key={item.id} className={`p-6 bg-card/50 backdrop-blur-sm ${index % 2 === 0 ? "border-primary/20" : "border-secondary/20"}`}>
+                    <div className="flex items-center gap-4 mb-4">
+                      {index % 2 === 0 ? (
+                        <Calendar className="h-6 w-6 text-primary" />
+                      ) : (
+                        <Star className="h-6 w-6 text-secondary" />
+                      )}
+                      <Badge className={index % 2 === 0 ? "bg-primary/20 text-primary" : "bg-secondary/20 text-secondary"}>
+                        {item.title}
+                      </Badge>
                     </div>
-                    <div>경상북도 포항시 북구 장성로 109</div>
+                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground mb-2">{new Date(item.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</p>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                    )}
+                  </Card>
+                ))
+              ) : (
+                <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Calendar className="h-6 w-6 text-primary" />
+                    <Badge className="bg-primary/20 text-primary">접수 기간</Badge>
                   </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-secondary/20">
-                <div className="flex items-center gap-4 mb-4">
-                  <Star className="h-6 w-6 text-secondary" />
-                  <Badge className="bg-secondary/20 text-secondary">최종 발표</Badge>
-                </div>
-                <h3 className="text-xl font-bold mb-2">최종 합격자 발표</h3>
-                <p className="text-muted-foreground mb-2">2025년 11월 14일 (금) 예정</p>
-              </Card>
+                  <h3 className="text-xl font-bold mb-2">참가 신청</h3>
+                  <p className="text-muted-foreground mb-2">~ 2025년 10월 27일 (월)</p>
+                  <p className="text-sm text-muted-foreground mb-2">1분 분량의 영상 또는 서면</p>
+                </Card>
+              )}
             </div>
           </div>
         </div>
@@ -373,16 +359,30 @@ export default async function CompetitionPage({ params }: PageProps) {
               </div>
             </Card>
 
-            <Card className="p-8 bg-gradient-to-b from-primary/20 to-primary/5 border-primary/30 neon-glow">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🏆</div>
-                <h3 className="text-2xl font-bold mb-4 text-primary">트랙별 (청소년, 일반 트랙) 수상자</h3>
-                <div className="space-y-2 text-muted-foreground">
-                  <p className="text-lg">실패 도서 출간 저자 기회 제공</p>
-                  <p className="text-lg">🏆 트로피 수여</p>
-                </div>
+            {awards.length > 0 ? (
+              <div className="space-y-4">
+                {awards.map((award) => (
+                  <Card key={award.id} className="p-8 bg-gradient-to-b from-primary/20 to-primary/5 border-primary/30 neon-glow">
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">{award.icon === "Trophy" ? "🏆" : award.icon === "Medal" ? "🥇" : award.icon === "Award" ? "🎖️" : "⭐"}</div>
+                      <h3 className="text-2xl font-bold mb-2 text-primary">{award.place}</h3>
+                      <p className="text-lg text-muted-foreground">{award.prize}</p>
+                    </div>
+                  </Card>
+                ))}
               </div>
-            </Card>
+            ) : (
+              <Card className="p-8 bg-gradient-to-b from-primary/20 to-primary/5 border-primary/30 neon-glow">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🏆</div>
+                  <h3 className="text-2xl font-bold mb-4 text-primary">트랙별 (청소년, 일반 트랙) 수상자</h3>
+                  <div className="space-y-2 text-muted-foreground">
+                    <p className="text-lg">실패 도서 출간 저자 기회 제공</p>
+                    <p className="text-lg">🏆 트로피 수여</p>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </section>
