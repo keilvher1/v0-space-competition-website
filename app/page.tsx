@@ -7,7 +7,7 @@ import Link from "next/link"
 import { getAllCompetitions } from "@/lib/neon"
 
 export default async function HomePage() {
-  // 모든 대회 회차 가져오기 (최신순) - Neon에서 가져옴
+  // 모든 대회 회차 가져오기 (최신순) - Neon 데이터베이스에서 가져옴
   const competitions = await getAllCompetitions()
 
   // 현재 진행 중인 대회 (가장 최신)

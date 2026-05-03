@@ -109,7 +109,7 @@ export async function getAllCompetitions(): Promise<Competition[]> {
     `
     return result || []
   } catch (error) {
-    console.error("[v0] getAllCompetitions error:", error)
+    console.error("getAllCompetitions error:", error)
     return []
   }
 }
