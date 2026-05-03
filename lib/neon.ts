@@ -1,10 +1,13 @@
 import { neon } from '@neondatabase/serverless'
 
-if (!process.env.DATABASE_URL) {
+// Neon serverless PostgreSQL client for competition data
+const DATABASE_URL = process.env.DATABASE_URL
+
+if (!DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set')
 }
 
-export const sql = neon(process.env.DATABASE_URL)
+export const sql = neon(DATABASE_URL)
 
 export interface Competition {
   id: number
