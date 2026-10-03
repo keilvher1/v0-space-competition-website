@@ -1,8 +1,10 @@
 import Link from "next/link"
-import { EDITIONS } from "@/lib/editions"
-import { ANNOUNCEMENTS_ENABLED } from "@/lib/site"
+import { getAnnouncements, getEditions, getSiteSettings } from "@/lib/cms/queries"
+import { editionHref } from "@/lib/cms/links"
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const [settings, editions, announcements] = await Promise.all([getSiteSettings(), getEditions(), getAnnouncements()])
+
   return (
     <footer className="bg-ink text-cream">
       <div className="site-container py-16 md:py-20">
@@ -15,10 +17,10 @@ export function SiteFooter() {
           <div>
             <p className="eyebrow text-cream/60">Editions</p>
             <ul className="mt-4 space-y-2.5">
-              {EDITIONS.map((edition) => (
-                <li key={edition.year}>
-                  <Link href={edition.href} className="hover:underline">
-                    {edition.title} <span className="font-display text-cream/60">{edition.year}</span>
+              {editions.map((edition) => (
+                <li key={edition.id}>
+                  <Link href={editionHref(edition)} className="hover:underline">
+                    {edition.data.title} <span className="font-display text-cream/60">{edition.year}</span>
                   </Link>
                 </li>
               ))}
@@ -27,7 +29,7 @@ export function SiteFooter() {
           <div>
             <p className="eyebrow text-cream/60">News</p>
             <ul className="mt-4 space-y-2.5">
-              {ANNOUNCEMENTS_ENABLED && (
+              {announcements.length > 0 && (
                 <li>
                   <Link href="/announcements" className="hover:underline">
                     공지사항
@@ -43,18 +45,21 @@ export function SiteFooter() {
           </div>
           <div>
             <p className="eyebrow text-cream/60">Contact</p>
-            <p className="mt-4">행사 문의</p>
-            <a href="mailto:jyjpeter79@gmail.com" className="mt-1 inline-block font-semibold underline underline-offset-4">
-              jyjpeter79@gmail.com
+            <p className="mt-4">{settings.contact.label}</p>
+            <a
+              href={`mailto:${settings.contact.email}`}
+              className="mt-1 inline-block font-semibold break-all underline underline-offset-4"
+            >
+              {settings.contact.email}
             </a>
           </div>
           <div>
             <p className="eyebrow text-cream/60">Host</p>
-            <p className="mt-4 leading-relaxed">한동대학교 IRIS · 심규진 교수 리빙랩 프로젝트</p>
+            <p className="mt-4 leading-relaxed">{settings.host}</p>
           </div>
         </div>
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 text-[13px] text-cream/60">
-          <p>© 2025–2026 우주최고실패대회</p>
+          <p>{settings.copyright}</p>
           <Link href="/admin" className="hover:text-cream hover:underline">
             관리자
           </Link>
