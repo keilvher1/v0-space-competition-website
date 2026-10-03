@@ -1,9 +1,20 @@
-import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Rocket, ArrowLeft, HelpCircle } from "lucide-react"
+import type { Metadata } from "next"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/server"
+import { SiteHeader } from "@/components/site/site-header"
+import { SiteFooter } from "@/components/site/site-footer"
+import { PageIntro } from "@/components/site/page-intro"
+import { CURRENT_EDITION } from "@/lib/editions"
+
+export const metadata: Metadata = { title: "자주 묻는 질문" }
+
+// DB에 영어로 저장된 카테고리를 화면에서는 한국어로 보여준다
+const CATEGORY_LABEL: Record<string, string> = {
+  Registration: "참가 신청",
+  Eligibility: "참가 자격",
+  Judging: "심사",
+  Fees: "참가비",
+}
 
 export default async function FAQPage() {
   const supabase = await createClient()
@@ -14,97 +25,63 @@ export default async function FAQPage() {
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
 
-  // FAQ를 카테고리별로 그룹화
-  const groupedFaqs = faqs?.reduce(
-    (acc, faq) => {
-      const category = faq.category || "일반"
-      if (!acc[category]) {
-        acc[category] = []
-      }
-      acc[category].push(faq)
-      return acc
-    },
-    {} as Record<string, typeof faqs>,
-  )
+  const grouped = new Map<string, NonNullable<typeof faqs>>()
+  for (const faq of faqs ?? []) {
+    const category = CATEGORY_LABEL[faq.category] ?? faq.category ?? "일반"
+    grouped.set(category, [...(grouped.get(category) ?? []), faq])
+  }
 
   return (
-    <div className="min-h-screen bg-background space-pattern">
-      <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Rocket className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-glow">제1회 우주 최고 실패 대회</span>
-            </Link>
-            <Button variant="ghost" asChild>
-              <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                돌아가기
-              </Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="mx-auto mb-4 w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center">
-              <HelpCircle className="h-8 w-8 text-secondary" />
-            </div>
-            <h1 className="text-4xl font-bold mb-4 text-glow">자주 묻는 질문</h1>
-            <p className="text-muted-foreground">대회에 관해 궁금한 점을 확인하세요</p>
-          </div>
-
-          {groupedFaqs && Object.keys(groupedFaqs).length > 0 ? (
-            <div className="space-y-8">
-              {Object.entries(groupedFaqs).map(([category, categoryFaqs]) => (
-                <div key={category}>
-                  <h2 className="text-2xl font-bold mb-4 text-primary">{category}</h2>
-                  <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                    <CardContent className="pt-6">
-                      <Accordion type="single" collapsible className="w-full">
-                        {categoryFaqs?.map((faq, index) => (
-                          <AccordionItem key={faq.id} value={`item-${index}`} className="border-border/50">
-                            <AccordionTrigger className="text-left hover:text-primary">{faq.question}</AccordionTrigger>
-                            <AccordionContent className="text-muted-foreground leading-relaxed">
-                              {faq.answer}
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    </CardContent>
-                  </Card>
+    <>
+      <SiteHeader />
+      <main>
+        <PageIntro eyebrow="FAQ" title="자주 묻는 질문">
+          제{CURRENT_EDITION.number}회 대회 일정·신청 관련 질문은{" "}
+          <Link href={`${CURRENT_EDITION.href}#faq`} className="text-link text-ink">
+            제{CURRENT_EDITION.number}회 대회 페이지
+          </Link>
+          에서도 확인할 수 있습니다.
+        </PageIntro>
+        <section className="bg-paper py-12 md:py-16">
+          <div className="site-container grid gap-12">
+            {grouped.size > 0 ? (
+              [...grouped].map(([category, items]) => (
+                <div key={category} className="grid gap-6 md:grid-cols-[14rem_1fr]">
+                  <h2 className="text-2xl font-extrabold tracking-[-0.03em]">{category}</h2>
+                  <div className="border-t-2 border-ink">
+                    {items.map((faq) => (
+                      <details key={faq.id} className="group border-b border-line">
+                        <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-6 py-5 text-lg font-bold [&::-webkit-details-marker]:hidden">
+                          {faq.question}
+                          <span
+                            aria-hidden="true"
+                            className="font-display text-2xl leading-none transition-transform group-open:rotate-45"
+                          >
+                            +
+                          </span>
+                        </summary>
+                        <p className="pr-10 pb-6 leading-[1.85] whitespace-pre-wrap text-ink-soft">{faq.answer}</p>
+                      </details>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-              <CardContent className="py-12 text-center">
-                <HelpCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">아직 등록된 FAQ가 없습니다</h3>
-                <p className="text-muted-foreground">궁금한 점은 이메일로 문의해주세요.</p>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="mt-12 bg-card/50 backdrop-blur-sm border-secondary/20">
-            <CardContent className="py-8 text-center">
-              <h3 className="text-xl font-semibold mb-2">더 궁금한 점이 있으신가요?</h3>
-              <p className="text-muted-foreground mb-4">아래 이메일로 문의해주세요.</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="mailto:ckdrnr50@naver.com" className="text-primary hover:underline">
-                  ckdrnr50@naver.com
-                </a>
-                <span className="hidden sm:inline text-muted-foreground">|</span>
-                <a href="mailto:visionq@handong.edu" className="text-primary hover:underline">
-                  visionq@handong.edu
-                </a>
+              ))
+            ) : (
+              <div className="border-2 border-ink bg-cream p-10 text-center">
+                <p className="text-xl font-extrabold">아직 등록된 FAQ가 없습니다</p>
+                <p className="mt-2 text-ink-soft">궁금한 점은 이메일로 문의해주세요.</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-ink bg-sky p-7">
+              <p className="text-lg font-extrabold">더 궁금한 점이 있으신가요?</p>
+              <a href="mailto:jyjpeter79@gmail.com" className="btn btn-cream">
+                jyjpeter79@gmail.com
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
-    </div>
+      <SiteFooter />
+    </>
   )
 }
