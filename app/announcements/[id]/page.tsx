@@ -1,11 +1,14 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { ANNOUNCEMENTS_ENABLED } from "@/lib/site"
 import { SiteHeader } from "@/components/site/site-header"
 import { SiteFooter } from "@/components/site/site-footer"
 import { formatDate } from "@/lib/utils"
 
 export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!ANNOUNCEMENTS_ENABLED) notFound()
+
   const { id } = await params
   const supabase = await createClient()
 

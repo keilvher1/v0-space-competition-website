@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { ANNOUNCEMENTS_ENABLED } from "@/lib/site"
 import { SiteHeader } from "@/components/site/site-header"
 import { SiteFooter } from "@/components/site/site-footer"
 import { PageIntro } from "@/components/site/page-intro"
@@ -10,6 +12,8 @@ import { formatDate } from "@/lib/utils"
 export const metadata: Metadata = { title: "공지사항" }
 
 export default async function AnnouncementsPage() {
+  if (!ANNOUNCEMENTS_ENABLED) notFound()
+
   const supabase = await createClient()
 
   const { data: announcements } = await supabase

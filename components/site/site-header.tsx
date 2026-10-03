@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { CURRENT_EDITION, dDayLabel, editionStatus } from "@/lib/editions"
+import { ANNOUNCEMENTS_ENABLED } from "@/lib/site"
 import { ArrowRight } from "./icons"
 
 const NAV = [
   { href: "/#about", label: "소개" },
   { href: "/#archive", label: "역대 대회" },
   { href: "/#records", label: "기록" },
-  { href: "/announcements", label: "공지사항" },
+  ...(ANNOUNCEMENTS_ENABLED ? [{ href: "/announcements", label: "공지사항" }] : []),
   { href: "/faq", label: "FAQ" },
 ]
 

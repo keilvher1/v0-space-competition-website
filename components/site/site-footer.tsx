@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { EDITIONS } from "@/lib/editions"
+import { ANNOUNCEMENTS_ENABLED } from "@/lib/site"
 
 export function SiteFooter() {
   return (
@@ -26,11 +27,13 @@ export function SiteFooter() {
           <div>
             <p className="eyebrow text-cream/60">News</p>
             <ul className="mt-4 space-y-2.5">
-              <li>
-                <Link href="/announcements" className="hover:underline">
-                  공지사항
-                </Link>
-              </li>
+              {ANNOUNCEMENTS_ENABLED && (
+                <li>
+                  <Link href="/announcements" className="hover:underline">
+                    공지사항
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/faq" className="hover:underline">
                   자주 묻는 질문
