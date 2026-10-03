@@ -11,10 +11,15 @@ export function hasDatabase() {
   return Boolean(process.env.DATABASE_URL)
 }
 
+/** pg는 sslmode=require를 verify-full로 처리하면서 매번 경고를 남긴다. 같은 동작을 명시해 로그에 경고가 쌓이지 않게 한다 */
+function connectionString() {
+  return process.env.DATABASE_URL?.replace(/([?&]sslmode=)(prefer|require|verify-ca)(?=&|$)/, "$1verify-full")
+}
+
 function pool(): Pool {
   if (!globalForDb.wfPool) {
     const p = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: connectionString(),
       max: 5,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 10_000,
