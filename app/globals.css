@@ -381,3 +381,243 @@
     transition: none;
   }
 }
+
+/* ── 첫 방문 인트로(로딩) ─────────────────────────────────
+   세션당 한 번. 전부 CSS로 동작하고 2.3초 뒤 커튼처럼 위로 걷힌다.
+   html.wf-no-intro(이미 봤거나 건너뜀) 또는 모션 줄이기 설정이면 표시하지 않는다. */
+.wf-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--cream);
+  animation: wf-intro-exit 0.85s cubic-bezier(0.76, 0, 0.24, 1) 2.3s forwards;
+}
+.wf-no-intro .wf-intro {
+  display: none;
+}
+.wf-intro-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 10% 18%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 24% 74%, var(--cream) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 36% 30%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 52% 88%, var(--cream) 50%, transparent 51%),
+    radial-gradient(2px 2px at 61% 12%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 70% 62%, var(--cream) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 82% 26%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 80%, var(--cream) 50%, transparent 51%),
+    radial-gradient(2px 2px at 95% 46%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 6% 52%, var(--cream) 50%, transparent 51%),
+    radial-gradient(2px 2px at 44% 58%, var(--cream) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 76% 94%, var(--cream) 50%, transparent 51%);
+  animation: wf-twinkle 1.4s ease-in-out infinite alternate;
+}
+.wf-intro-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 2.6vh, 22px);
+  padding: 24px;
+  text-align: center;
+  animation: wf-stage-exit 0.6s ease-in 2.3s forwards;
+}
+.wf-intro-planet {
+  width: clamp(150px, 36vw, 230px);
+  height: auto;
+  overflow: visible;
+}
+.wf-intro-globe {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wf-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+.wf-intro-ring {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: wf-draw 0.9s ease-out 0.35s forwards;
+}
+.wf-intro-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wf-star 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+.wf-intro-moon-orbit {
+  transform-box: view-box;
+  transform-origin: 120px 120px;
+  opacity: 0;
+  animation:
+    wf-fade-in 0.3s ease-out 0.25s forwards,
+    wf-orbit 2.2s linear 0.25s infinite;
+}
+.wf-intro-word {
+  display: flex;
+  overflow: hidden;
+  padding: 0.04em 0.12em 0.16em;
+  font-size: clamp(2.1rem, 9.2vw, 4.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+.wf-intro-word span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(105%);
+  animation: wf-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(0.55s + var(--i) * 55ms) forwards;
+}
+.wf-intro-word span.wf-intro-fail {
+  animation:
+    wf-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(0.55s + var(--i) * 55ms) forwards,
+    wf-fail 0.75s ease-in-out 1.45s forwards;
+}
+.wf-intro-tagline {
+  opacity: 0;
+  font-size: clamp(1rem, 3.6vw, 1.35rem);
+  font-weight: 700;
+  color: rgba(252, 237, 206, 0.82);
+  animation: wf-fade-up 0.5s ease-out 1.55s forwards;
+}
+.wf-intro-bar {
+  width: min(220px, 60vw);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(252, 237, 206, 0.18);
+}
+.wf-intro-bar span {
+  display: block;
+  height: 100%;
+  background: var(--coral);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: wf-bar 2.1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+}
+.wf-intro-skip {
+  position: absolute;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  padding: 8px 14px;
+  border: 1.5px solid rgba(252, 237, 206, 0.5);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  cursor: pointer;
+  animation: wf-fade-in 0.3s ease-out 0.4s forwards;
+}
+.wf-intro-skip:hover {
+  border-color: var(--cream);
+}
+
+@keyframes wf-intro-exit {
+  0% {
+    transform: translateY(0);
+    border-radius: 0;
+  }
+  100% {
+    transform: translateY(-104%);
+    border-radius: 0 0 50% 50% / 0 0 14% 14%;
+    visibility: hidden;
+  }
+}
+@keyframes wf-stage-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-48px);
+  }
+}
+@keyframes wf-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes wf-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes wf-star {
+  0% {
+    transform: scale(0) rotate(-120deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes wf-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes wf-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes wf-fail {
+  0% {
+    transform: translateY(0) rotate(0);
+    text-shadow: none;
+  }
+  25% {
+    transform: translateY(8%) rotate(-10deg);
+  }
+  55% {
+    transform: translateY(-5%) rotate(7deg);
+    text-shadow: 0.09em 0.09em 0 var(--coral);
+  }
+  80% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: none;
+    text-shadow: 0.05em 0.05em 0 var(--coral);
+  }
+}
+@keyframes wf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wf-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes wf-bar {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes wf-twinkle {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-intro {
+    display: none;
+  }
+}
