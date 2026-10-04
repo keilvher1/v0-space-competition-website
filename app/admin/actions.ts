@@ -279,8 +279,18 @@ export async function listMediaForPicker() {
 
 export async function deleteMedia(id: string): Promise<SaveResult> {
   return run(async () => {
-    const rows = await query<{ url: string }>(`delete from cms_media where id = $1 returning url`, [id])
-    if (rows[0] && blobConfigured()) await del(rows[0].url).catch(() => {})
+    const rows = await query<{ url: string }>(`select url from cms_media where id = $1`, [id])
+    if (!rows[0]) return { ok: true }
+    // 저장소에서 먼저 지우고, 실패하면 목록에 남겨 두어 다시 시도할 수 있게 한다
+    if (blobConfigured()) {
+      try {
+        await del(rows[0].url)
+      } catch (error) {
+        console.error("[cms] 저장소 파일 삭제 실패", error)
+        return { ok: false, error: "저장소에서 파일을 지우지 못했습니다. 잠시 뒤 다시 시도해주세요." }
+      }
+    }
+    await query(`delete from cms_media where id = $1`, [id])
     return { ok: true }
   })
 }

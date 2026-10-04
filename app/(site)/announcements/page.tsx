@@ -17,7 +17,7 @@ export default async function AnnouncementsPage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main">
         <PageHero eyebrow={hero.eyebrow} title={hero.title} description={hero.description} />
         <section className="bg-paper py-12 md:py-16">
           <div className="site-container">

@@ -8,7 +8,7 @@ export function PageHeader({
   back,
 }: {
   title: string
-  description?: string
+  description?: React.ReactNode
   action?: { href: string; label: string }
   back?: { href: string; label: string }
 }) {
@@ -75,4 +75,17 @@ export function Row({ href, title, meta, badges, leading }: {
 
 export function EmptyState({ children }: { children: React.ReactNode }) {
   return <p className="px-4 py-10 text-center text-sm text-ink-soft">{children}</p>
+}
+
+/** 편집 화면 머리말에 넣는 '사이트에서 보기' 링크. 비공개면 주소만 보여준다. */
+export function SiteLink({ href, published }: { href: string; published: boolean }) {
+  if (!published) return <>사이트 주소: {href} (비공개 — 공개하면 사이트에 나타납니다)</>
+  return (
+    <>
+      사이트 주소:{" "}
+      <a href={href} target="_blank" rel="noopener noreferrer" className="font-bold text-ink underline underline-offset-4">
+        {href} ↗
+      </a>
+    </>
+  )
 }
