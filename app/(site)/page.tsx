@@ -27,7 +27,7 @@ function Sticker() {
           </textPath>
         </text>
       </svg>
-      <img src="/icon.svg" alt="" width={48} height={48} className="absolute inset-[31%] size-[38%]" />
+      <img decoding="async" src="/icon.svg" alt="" width={48} height={48} className="absolute inset-[31%] size-[38%]" />
     </div>
   )
 }
@@ -146,6 +146,8 @@ function NowSection({ edition }: { edition: Edition }) {
             aria-label={`${edition.data.title} 대회 페이지로 이동`}
           >
             <img
+              loading="lazy"
+              decoding="async"
               src={edition.data.poster.url}
               width={edition.data.poster.width || undefined}
               height={edition.data.poster.height || undefined}
@@ -199,6 +201,7 @@ function ArchiveSection({ editions, archive }: { editions: Edition[]; archive: S
                   <ArrowRight className="archive-arrow hidden size-8 md:block" />
                   {edition.data.poster.url && (
                     <img
+                      decoding="async"
                       src={edition.data.poster.url}
                       alt=""
                       loading="lazy"
@@ -280,7 +283,7 @@ function Tile({ tile }: { tile: HighlightTile }) {
     return (
       <figure className={`reveal relative min-h-72 overflow-hidden border-2 border-ink ${span}`}>
         {tile.imageUrl && (
-          <img src={tile.imageUrl} alt={tile.title} loading="lazy" className="absolute inset-0 size-full object-cover" />
+          <img decoding="async" src={tile.imageUrl} alt={tile.title} loading="lazy" className="absolute inset-0 size-full object-cover" />
         )}
         {(tile.title || tile.body) && (
           <figcaption className="absolute inset-x-0 bottom-0 border-t-2 border-ink bg-ink/90 px-5 py-4 text-cream">
@@ -314,7 +317,7 @@ function Tile({ tile }: { tile: HighlightTile }) {
     return (
       <article className={`reveal grid grid-cols-[auto_1fr] items-center gap-5 border-2 border-ink p-5 sm:gap-6 sm:p-6 ${span}`} style={style}>
         {tile.imageUrl && (
-          <img src={tile.imageUrl} alt="" loading="lazy" className="w-20 border border-ink shadow-[5px_5px_0_var(--ink)] sm:w-24 md:w-28" />
+          <img decoding="async" src={tile.imageUrl} alt="" loading="lazy" className="w-20 border border-ink shadow-[5px_5px_0_var(--ink)] sm:w-24 md:w-28" />
         )}
         <div className="flex flex-col">
           {tile.kicker && <p className="eyebrow text-coral-deep">{tile.kicker}</p>}
@@ -378,6 +381,7 @@ function PartnersSection({ partners, copy }: { partners: Partner[]; copy: SiteSe
         {withLogo.map((partner) => (
           <div key={partner.id} className="flex h-20 w-44 shrink-0 items-center justify-center px-5 sm:w-48 sm:px-6">
             <img
+              decoding="async"
               src={partner.logoUrl}
               alt={partner.name}
               loading="lazy"

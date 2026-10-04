@@ -8,7 +8,8 @@ import { Paragraphs } from "@/components/site/text"
 import { ArrowRight, ArrowUpRight } from "@/components/site/icons"
 import { getEdition, getEditions, getFaqs, getPartners } from "@/lib/cms/queries"
 import { EditionLink } from "@/components/site/edition-link"
-import { videoEmbedUrl } from "@/lib/cms/embed"
+import { VideoEmbed } from "@/components/site/video-embed"
+import { videoEmbedUrl, videoThumbnail } from "@/lib/cms/embed"
 import type { Edition } from "@/lib/cms/types"
 import { STATUS_LABEL, contrastOn, editionStatus, editionTheme, normalizeHex, pad2, safeHref, themeVars } from "@/lib/cms/utils"
 
@@ -115,6 +116,7 @@ function Hero({ edition }: { edition: Edition }) {
               aria-label={posterLink ? `${data.title} 포스터 크게 보기, 새 창` : undefined}
             >
               <img
+                decoding="async"
                 src={data.poster.url}
                 width={data.poster.width || undefined}
                 height={data.poster.height || undefined}
@@ -292,7 +294,7 @@ function RecordsSection({ edition }: { edition: Edition }) {
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           {lead && (
             <figure className="reveal border-2 border-ink bg-cream text-ink">
-              <img src={lead.url} alt={lead.alt} loading="lazy" className="w-full" />
+              <img decoding="async" src={lead.url} alt={lead.alt} loading="lazy" className="w-full" />
               {lead.caption && <figcaption className="border-t-2 border-ink px-5 py-4 text-[15px] font-semibold">{lead.caption}</figcaption>}
             </figure>
           )}
@@ -325,7 +327,7 @@ function RecordsSection({ edition }: { edition: Edition }) {
             ))}
             {features.map((f, i) => (
               <article key={i} className="reveal grid grid-cols-[auto_1fr] items-center gap-5 border-2 border-ink bg-cream p-6 text-ink">
-                {f.imageUrl && <img src={f.imageUrl} alt="" loading="lazy" className="w-20 border border-ink" />}
+                {f.imageUrl && <img decoding="async" src={f.imageUrl} alt="" loading="lazy" className="w-20 border border-ink" />}
                 <div className={f.imageUrl ? "" : "col-span-2"}>
                   {f.kicker && <p className="eyebrow text-coral-deep">{f.kicker}</p>}
                   <h3 className="mt-1 text-xl font-extrabold tracking-[-0.02em]">{f.title}</h3>
@@ -344,7 +346,7 @@ function RecordsSection({ edition }: { edition: Edition }) {
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
             {restPhotos.map((p, i) => (
               <figure key={i} className="reveal border-2 border-ink bg-cream text-ink">
-                <img src={p.url} alt={p.alt} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <img decoding="async" src={p.url} alt={p.alt} loading="lazy" className="aspect-[4/3] w-full object-cover" />
                 {p.caption && <figcaption className="px-3 py-2 text-[13px] font-semibold">{p.caption}</figcaption>}
               </figure>
             ))}
@@ -355,10 +357,11 @@ function RecordsSection({ edition }: { edition: Edition }) {
   )
 }
 
-function VideoSection({ edition }: { edition: Edition }) {
+async function VideoSection({ edition }: { edition: Edition }) {
   const { video } = edition.data
   const src = video.url ? videoEmbedUrl(video.url) : null
   if (!src) return null
+  const thumbnail = await videoThumbnail(video.url)
   return (
     <section aria-labelledby="video-title" className="border-b-2 border-ink bg-paper py-20 md:py-24">
       <div className={`site-container grid items-center gap-12 ${video.portrait ? "md:grid-cols-[1fr_330px]" : ""}`}>
@@ -371,13 +374,7 @@ function VideoSection({ edition }: { edition: Edition }) {
           style={{ boxShadow: "8px 8px 0 var(--key)" }}
         >
           <div className={`relative ${video.portrait ? "aspect-[9/16]" : "aspect-video"}`}>
-            <iframe
-              src={src}
-              title={video.title || `${edition.data.title} 영상`}
-              allow="autoplay; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="absolute inset-0 size-full"
-            />
+            <VideoEmbed src={src} title={video.title || `${edition.data.title} 영상`} thumbnail={thumbnail} />
           </div>
         </div>
       </div>
@@ -405,6 +402,7 @@ async function OrganizersSection({ edition }: { edition: Edition }) {
           {partners.map((p) => (
             <li key={p.id} className="flex h-24 items-center justify-center bg-paper px-5 sm:h-28 sm:px-6">
               <img
+                decoding="async"
                 src={p.logoUrl}
                 alt={p.name}
                 loading="lazy"

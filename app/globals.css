@@ -367,26 +367,26 @@
   }
 }
 
-@keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
+/* 스크롤 등장: 처음 보일 때 한 번만 재생한다(MotionObserver가 is-revealed를 붙임).
+   스크롤 연동 애니메이션(animation-timeline)은 끝난 뒤에도 실행 중으로 남아 요소마다 GPU 레이어를 붙잡았다.
+   위치는 translate로 옮겨 포스터 기울기 같은 transform과 겹치지 않게 한다. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready .reveal {
+    transition:
+      opacity 0.6s var(--ease),
+      translate 0.6s var(--ease),
+      transform 260ms var(--ease);
   }
-  to {
-    opacity: 1;
-    transform: none;
+  .reveal-ready .reveal:not(.is-revealed) {
+    opacity: 0;
+    translate: 0 28px;
   }
 }
 
-/* 스크롤 연동 등장. 지원하지 않는 브라우저에서는 처음부터 보인다 */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: reveal-up linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 45%;
-    }
-  }
+/* 흐르는 띠·회전 스티커는 화면 밖에서 멈춘다 */
+.marquee.is-offscreen .marquee-track,
+.spin-slow.is-offscreen {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -409,12 +409,18 @@
    세션당 한 번. 전부 CSS로 동작하고 2.3초 뒤 커튼처럼 위로 걷힌다.
    html.wf-no-intro(이미 봤거나 건너뜀) 또는 모션 줄이기 설정이면 표시하지 않는다. */
 .wf-intro {
+  /* 커튼 아래 끝을 미리 둥글게 만들어 화면 밖에 두고, 걷힐 때는 위로 이동만 한다.
+     모서리 둥글기를 애니메이션하면 매 프레임 전체 화면을 다시 그려야 했다. */
+  --intro-tail: 16vh;
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto 0;
   z-index: 100;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  height: calc(100vh + var(--intro-tail));
+  height: calc(100dvh + var(--intro-tail));
+  padding-bottom: var(--intro-tail);
+  border-radius: 0 0 50% 50% / 0 0 var(--intro-tail) var(--intro-tail);
   background: var(--ink);
   color: var(--cream);
   animation: wf-intro-exit 0.85s cubic-bezier(0.76, 0, 0.24, 1) 2.3s forwards;
@@ -424,7 +430,7 @@
 }
 .wf-intro-stars {
   position: absolute;
-  inset: 0;
+  inset: 0 0 var(--intro-tail) 0;
   background-image:
     radial-gradient(2px 2px at 10% 18%, var(--cream) 50%, transparent 51%),
     radial-gradient(1.5px 1.5px at 24% 74%, var(--cream) 50%, transparent 51%),
@@ -452,28 +458,32 @@
 }
 .wf-intro-planet {
   /* 가로로 든 폰처럼 낮은 화면에서도 문구와 진행 막대까지 한 화면에 들어오게 높이도 본다 */
+  position: relative;
   width: clamp(150px, min(36vw, 30vh), 230px);
-  height: auto;
+  aspect-ratio: 1;
+}
+/* 행성의 각 부분은 HTML 층(span)으로 나눠 움직인다. SVG 내부 요소의 애니메이션은 GPU로 넘어가지 않는다 */
+.wf-intro-planet > span {
+  position: absolute;
+  inset: 0;
+}
+.wf-intro-planet svg {
+  display: block;
+  width: 100%;
+  height: 100%;
   overflow: visible;
 }
-.wf-intro-globe {
-  transform-box: fill-box;
-  transform-origin: center;
+.wf-p-globe {
   animation: wf-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
-.wf-intro-ring {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: wf-draw 0.9s ease-out 0.35s forwards;
+.wf-p-ring {
+  opacity: 0;
+  animation: wf-ring 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
 }
-.wf-intro-star {
-  transform-box: fill-box;
-  transform-origin: center;
+.wf-p-star {
   animation: wf-star 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
 }
-.wf-intro-moon-orbit {
-  transform-box: view-box;
-  transform-origin: 120px 120px;
+.wf-p-orbit {
   opacity: 0;
   animation:
     wf-fade-in 0.3s ease-out 0.25s forwards,
@@ -488,16 +498,18 @@
   line-height: 1.1;
   letter-spacing: -0.04em;
 }
-.wf-intro-word span {
+.wf-intro-word > span {
   display: inline-block;
   opacity: 0;
   transform: translateY(105%);
   animation: wf-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(0.55s + var(--i) * 55ms) forwards;
 }
-.wf-intro-word span.wf-intro-fail {
-  animation:
-    wf-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(0.55s + var(--i) * 55ms) forwards,
-    wf-fail 0.75s ease-in-out 1.45s forwards;
+.wf-intro-word > span.wf-intro-fail {
+  text-shadow: 0.05em 0.05em 0 var(--coral);
+}
+.wf-intro-wobble {
+  display: inline-block;
+  animation: wf-fail 0.75s ease-in-out 1.45s both;
 }
 .wf-intro-tagline {
   opacity: 0;
@@ -524,7 +536,7 @@
 .wf-intro-skip {
   position: absolute;
   right: 20px;
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  bottom: calc(var(--intro-tail) + 20px + env(safe-area-inset-bottom));
   padding: 8px 14px;
   border: 1.5px solid rgba(252, 237, 206, 0.5);
   border-radius: 999px;
@@ -541,14 +553,10 @@
 }
 
 @keyframes wf-intro-exit {
-  0% {
-    transform: translateY(0);
-    border-radius: 0;
-  }
-  100% {
-    transform: translateY(-104%);
-    border-radius: 0 0 50% 50% / 0 0 14% 14%;
-    visibility: hidden;
+  /* transform만 둬야 GPU 합성으로 돈다(visibility 하나만 섞여도 전체가 메인 스레드로 간다).
+     101% 올라가면 화면 밖이라 보이지 않고, 끝나면 IntroControls가 아예 뺀다. */
+  to {
+    transform: translateY(-101%);
   }
 }
 @keyframes wf-stage-exit {
@@ -568,9 +576,14 @@
     transform: scale(1);
   }
 }
-@keyframes wf-draw {
+@keyframes wf-ring {
+  from {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.55);
+  }
   to {
-    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: none;
   }
 }
 @keyframes wf-star {
@@ -595,21 +608,18 @@
 @keyframes wf-fail {
   0% {
     transform: translateY(0) rotate(0);
-    text-shadow: none;
   }
   25% {
     transform: translateY(8%) rotate(-10deg);
   }
   55% {
-    transform: translateY(-5%) rotate(7deg);
-    text-shadow: 0.09em 0.09em 0 var(--coral);
+    transform: translateY(-5%) rotate(7deg) scale(1.06);
   }
   80% {
     transform: rotate(-2deg);
   }
   100% {
     transform: none;
-    text-shadow: 0.05em 0.05em 0 var(--coral);
   }
 }
 @keyframes wf-fade-up {

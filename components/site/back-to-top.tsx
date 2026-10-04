@@ -7,10 +7,26 @@ export function BackToTop() {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > window.innerHeight * 1.5)
-    onScroll()
+    // 스크롤 이벤트마다 계산하지 않고 프레임당 한 번, 상태가 바뀔 때만 다시 그린다
+    let frame = 0
+    let last = false
+    const update = () => {
+      frame = 0
+      const next = window.scrollY > window.innerHeight * 1.5
+      if (next !== last) {
+        last = next
+        setShow(next)
+      }
+    }
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update)
+    }
+    update()
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
   }, [])
 
   return (
