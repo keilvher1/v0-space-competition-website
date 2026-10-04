@@ -23,7 +23,7 @@ export default async function AnnouncementDetailPage({ params }: { params: Promi
   return (
     <>
       <SiteHeader />
-      <main className="bg-paper">
+      <main id="main" className="bg-paper">
         <article className="site-container max-w-3xl py-14 md:py-20">
           <Link href="/announcements" className="text-link text-sm">
             ← 공지사항 목록

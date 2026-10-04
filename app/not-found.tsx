@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <>
       <SiteHeader />
-      <main className="starfield on-dark border-b-2 border-ink bg-ink text-cream">
+      <main id="main" className="starfield on-dark border-b-2 border-ink bg-ink text-cream">
         <div className="site-container py-24 md:py-32">
           <p className="eyebrow text-cream/70">404 · Lost in space</p>
           <h1 className="mt-6 text-[clamp(3rem,9vw,7.5rem)] leading-[1.05] font-black tracking-[-0.045em]">

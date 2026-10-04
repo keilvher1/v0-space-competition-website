@@ -16,7 +16,17 @@ export function MediaLibrary({ items, uploadReady }: { items: MediaItem[]; uploa
   const [progress, setProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
+  const remove = (id: string) =>
+    startTransition(async () => {
+      setError(null)
+      const result = await deleteMedia(id)
+      if (!result.ok) setError(result.error)
+      setConfirming(null)
+      router.refresh()
+    })
 
   const onFiles = async (files: FileList | null) => {
     if (!files?.length) return
@@ -73,25 +83,35 @@ export function MediaLibrary({ items, uploadReady }: { items: MediaItem[]; uploa
                 <p className="truncate text-xs text-ink-soft" title={m.pathname}>
                   {m.pathname.split("/").pop()} · {size(m.size)}
                 </p>
-                <div className="flex gap-1.5">
-                  <button type="button" onClick={() => copy(m.url)} className="flex-1 rounded-md border border-line px-2 py-1.5 text-xs font-bold">
-                    {copied === m.url ? "복사됨" : "주소 복사"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() =>
-                      startTransition(async () => {
-                        const result = await deleteMedia(m.id)
-                        if (!result.ok) setError(result.error)
-                        router.refresh()
-                      })
-                    }
-                    className="rounded-md border border-red-300 px-2 py-1.5 text-xs font-bold text-red-700"
-                  >
-                    삭제
-                  </button>
-                </div>
+                {confirming === m.id ? (
+                  // 사이트에서 쓰는 이미지를 실수로 지우지 않도록 한 번 더 확인한다
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => remove(m.id)}
+                      className="min-h-9 flex-1 rounded-md border border-red-700 bg-red-700 px-2 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                    >
+                      {pending ? "삭제 중…" : "정말 삭제"}
+                    </button>
+                    <button type="button" onClick={() => setConfirming(null)} className="min-h-9 rounded-md border border-line px-2 py-1.5 text-xs font-bold">
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1.5">
+                    <button type="button" onClick={() => copy(m.url)} className="min-h-9 flex-1 rounded-md border border-line px-2 py-1.5 text-xs font-bold">
+                      {copied === m.url ? "복사됨" : "주소 복사"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirming(m.id)}
+                      className="min-h-9 rounded-md border border-red-300 px-2 py-1.5 text-xs font-bold text-red-700"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             </li>
           ))}

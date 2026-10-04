@@ -1,11 +1,10 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { SiteHeader } from "@/components/site/site-header"
 import { SiteFooter } from "@/components/site/site-footer"
 import { PageHero } from "@/components/site/page-hero"
 import { ArrowRight } from "@/components/site/icons"
 import { getCurrentEdition, getEditions, getFaqs, getSiteSettings } from "@/lib/cms/queries"
-import { editionHref } from "@/lib/cms/links"
+import { EditionLink } from "@/components/site/edition-link"
 import { editionStatus } from "@/lib/cms/utils"
 
 export const revalidate = 300
@@ -28,12 +27,12 @@ export default async function FAQPage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main">
         <PageHero eyebrow={hero.eyebrow} title={hero.title} description={hero.description}>
           {editionStatus(current) === "recruiting" && (
-            <Link href={`${editionHref(current)}#apply`} className="btn btn-coral">
+            <EditionLink edition={current} hash="#apply" className="btn btn-coral">
               제{current.number}회 참가·참관 신청 안내 <ArrowRight />
-            </Link>
+            </EditionLink>
           )}
         </PageHero>
         <section className="bg-paper py-14 md:py-20">

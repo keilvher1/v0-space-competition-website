@@ -6,7 +6,7 @@ import { Marquee } from "@/components/site/marquee"
 import { Multiline, WithHighlight } from "@/components/site/text"
 import { ArrowDown, ArrowRight, ArrowUpRight, Sparkle } from "@/components/site/icons"
 import { getCurrentEdition, getEditions, getPartners, getSiteSettings } from "@/lib/cms/queries"
-import { editionHref } from "@/lib/cms/links"
+import { EditionLink } from "@/components/site/edition-link"
 import type { Edition, HighlightTile, Partner, SiteSettings } from "@/lib/cms/types"
 import { STATUS_LABEL, contrastOn, dDayLabel, editionStatus, normalizeHex, pad2, safeHref } from "@/lib/cms/utils"
 
@@ -62,9 +62,9 @@ function Hero({ hero, edition }: { hero: SiteSettings["hero"]; edition: Edition 
             <Multiline text={hero.body} />
           </p>
           <div className="flex flex-wrap gap-3 sm:gap-4 md:justify-end">
-            <Link href={editionHref(edition)} className="btn btn-coral">
+            <EditionLink edition={edition} className="btn btn-coral">
               제{edition.number}회 대회 보기 <ArrowRight />
-            </Link>
+            </EditionLink>
             <Link href="#archive" className="btn btn-ink">
               {hero.secondaryLabel} <ArrowDown />
             </Link>
@@ -91,7 +91,6 @@ function SloganBand({ slogans }: { slogans: string[] }) {
 
 function NowSection({ edition }: { edition: Edition }) {
   const status = editionStatus(edition)
-  const href = editionHref(edition)
   const bg = normalizeHex(edition.keyColor)
   const fg = contrastOn(bg)
   const dark = fg !== "#052031"
@@ -131,18 +130,18 @@ function NowSection({ edition }: { edition: Edition }) {
           )}
           <div className="mt-8 flex flex-wrap gap-3 sm:gap-4">
             {status === "recruiting" && (
-              <Link href={`${href}#apply`} className="btn btn-coral">
+              <EditionLink edition={edition} hash="#apply" className="btn btn-coral">
                 참가·참관 신청 안내 <ArrowRight />
-              </Link>
+              </EditionLink>
             )}
-            <Link href={href} className="btn btn-cream">
+            <EditionLink edition={edition} className="btn btn-cream">
               대회 페이지 보기 <ArrowRight />
-            </Link>
+            </EditionLink>
           </div>
         </div>
         {edition.data.poster.url && (
-          <Link
-            href={href}
+          <EditionLink
+            edition={edition}
             className="poster-tilt reveal mx-auto block w-[min(100%,380px)] border-2 border-ink bg-cream p-2.5 shadow-[10px_10px_0_var(--coral)]"
             aria-label={`${edition.data.title} 대회 페이지로 이동`}
           >
@@ -152,7 +151,7 @@ function NowSection({ edition }: { edition: Edition }) {
               height={edition.data.poster.height || undefined}
               alt={edition.data.poster.alt}
             />
-          </Link>
+          </EditionLink>
         )}
       </div>
     </section>
@@ -179,8 +178,8 @@ function ArchiveSection({ editions, archive }: { editions: Edition[]; archive: S
             const rowStyle = { "--row-bg": bg, "--row-fg": contrastOn(bg) } as React.CSSProperties
             return (
               <li key={edition.id} className="reveal">
-                <Link
-                  href={editionHref(edition)}
+                <EditionLink
+                  edition={edition}
                   style={rowStyle}
                   className="archive-row relative grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 border-b-2 border-ink px-2 py-7 sm:gap-x-5 md:grid-cols-[6.5rem_7rem_1fr_auto_3rem] md:px-5 md:py-10"
                 >
@@ -206,7 +205,7 @@ function ArchiveSection({ editions, archive }: { editions: Edition[]; archive: S
                       className="archive-peek pointer-events-none absolute top-1/2 right-[15rem] z-10 hidden w-36 border-2 border-ink shadow-[6px_6px_0_var(--ink)] [@media(hover:hover)_and_(min-width:1024px)]:block"
                     />
                   )}
-                </Link>
+                </EditionLink>
               </li>
             )
           })}
@@ -403,7 +402,7 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main>
+      <main id="main">
         <Hero hero={settings.hero} edition={current} />
         <SloganBand slogans={settings.slogans} />
         <NowSection edition={current} />

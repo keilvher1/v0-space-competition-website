@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { ANNOUNCEMENT_FIELDS } from "@/components/admin/fields"
 import { SchemaForm } from "@/components/admin/schema-form"
-import { PageHeader } from "@/components/admin/ui"
+import { PageHeader, SiteLink } from "@/components/admin/ui"
 import { admin } from "@/lib/cms/queries"
 import { deleteAnnouncement, saveAnnouncement } from "../../../actions"
 
@@ -20,7 +20,11 @@ export default async function AnnouncementEditPage({ params }: { params: Promise
 
   return (
     <>
-      <PageHeader title={isNew ? "새 공지" : item!.title} back={{ href: "/admin/announcements", label: "공지 목록" }} />
+      <PageHeader
+        title={isNew ? "새 공지" : item!.title}
+        description={isNew ? undefined : <SiteLink href={`/announcements/${item!.id}`} published={item!.published} />}
+        back={{ href: "/admin/announcements", label: "공지 목록" }}
+      />
       <SchemaForm
         fields={ANNOUNCEMENT_FIELDS}
         initial={initial}

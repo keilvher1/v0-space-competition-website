@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/site/site-footer"
 import { Paragraphs } from "@/components/site/text"
 import { ArrowRight, ArrowUpRight } from "@/components/site/icons"
 import { getEdition, getEditions, getFaqs, getPartners } from "@/lib/cms/queries"
-import { editionHref } from "@/lib/cms/links"
+import { EditionLink } from "@/components/site/edition-link"
 import { videoEmbedUrl } from "@/lib/cms/embed"
 import type { Edition } from "@/lib/cms/types"
 import { STATUS_LABEL, contrastOn, editionStatus, editionTheme, normalizeHex, pad2, safeHref, themeVars } from "@/lib/cms/utils"
@@ -61,6 +61,12 @@ function Hero({ edition }: { edition: Edition }) {
     >
       <div className="site-container grid gap-14 pt-12 pb-16 md:grid-cols-[1.25fr_0.75fr] md:items-center md:pt-16 md:pb-24">
         <div>
+          <Link
+            href="/#archive"
+            className="mb-5 inline-flex min-h-10 items-center gap-1.5 text-sm font-bold opacity-75 transition-opacity hover:underline hover:opacity-100"
+          >
+            <ArrowRight className="size-4 rotate-180" /> 역대 대회
+          </Link>
           <div className="flex flex-wrap items-center gap-3">
             <span className="eyebrow opacity-70">{data.hero.eyebrow || `Archive · No.${pad2(edition.number)} · ${edition.year}`}</span>
             <span className={`chip ${status === "ended" ? "" : "chip-dot"}`}>
@@ -306,7 +312,11 @@ function RecordsSection({ edition }: { edition: Edition }) {
                     </a>
                   )}
                   {safeHref(item.secondaryUrl) && (
-                    <a href={safeHref(item.secondaryUrl)!} {...external(item.secondaryUrl)} className="text-sm underline underline-offset-4 opacity-75">
+                    <a
+                      href={safeHref(item.secondaryUrl)!}
+                      {...external(item.secondaryUrl)}
+                      className="inline-flex min-h-10 items-center text-sm underline underline-offset-4 opacity-75"
+                    >
                       다른 게재본
                     </a>
                   )}
@@ -454,9 +464,9 @@ function EditionNav({ edition, editions }: { edition: Edition; editions: Edition
       {items.map(({ label, edition: target, dir }) => {
         const bg = normalizeHex(target.keyColor)
         return (
-          <Link
+          <EditionLink
             key={target.id}
-            href={editionHref(target)}
+            edition={target}
             className="group block border-b-2 border-ink transition-[filter] hover:brightness-110 md:[&:not(:first-child)]:border-l-2"
             style={{ background: bg, color: contrastOn(bg) } as React.CSSProperties}
           >
@@ -477,7 +487,7 @@ function EditionNav({ edition, editions }: { edition: Edition; editions: Edition
                 }`}
               />
             </div>
-          </Link>
+          </EditionLink>
         )
       })}
     </nav>
@@ -492,7 +502,7 @@ export default async function EditionPage({ params }: { params: Promise<{ editio
   return (
     <>
       <SiteHeader />
-      <main style={themeVars(editionTheme(edition)) as React.CSSProperties}>
+      <main id="main" style={themeVars(editionTheme(edition)) as React.CSSProperties}>
         <Hero edition={edition} />
         <ApplySection edition={edition} />
         <IntroSection edition={edition} />

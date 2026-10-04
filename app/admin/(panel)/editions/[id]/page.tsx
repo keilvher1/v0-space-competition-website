@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/admin/ui"
 import { emptyEditionData } from "@/lib/cms/defaults"
 import { editionHref } from "@/lib/cms/links"
 import { admin } from "@/lib/cms/queries"
+import { SiteLink } from "@/components/admin/ui"
 import { deleteEdition, saveEdition } from "../../../actions"
 
 export const metadata = { title: "회차 편집" }
@@ -47,7 +48,7 @@ export default async function EditionEditPage({ params }: { params: Promise<{ id
         description={
           isNew
             ? "처음에는 비공개로 만들어집니다. 내용을 채운 뒤 [사이트에 공개]를 켜세요."
-            : `사이트 주소: ${editionHref(edition!)}`
+            : <SiteLink href={editionHref(edition!)} published={edition!.published} />
         }
         back={{ href: "/admin/editions", label: "회차 목록" }}
       />
