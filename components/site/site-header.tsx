@@ -25,7 +25,7 @@ export async function SiteHeader() {
       <a href="#main" className="skip-link">
         본문 바로가기
       </a>
-      <header className="sticky top-0 z-50 border-b-2 border-ink bg-paper/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b-2 border-ink bg-paper">
         {/* 360px 이하 폰에서도 한 줄에 들어가도록 간격·글자 크기를 줄인다 */}
         <div className="site-container flex h-16 items-center gap-3 sm:gap-6 md:h-[72px]">
           <Link href="/" className="flex min-h-11 shrink-0 items-center gap-2 sm:gap-2.5" aria-label="우주최고실패대회 처음으로">
