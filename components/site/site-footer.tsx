@@ -60,7 +60,7 @@ export async function SiteFooter() {
         </div>
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 text-[13px] text-cream/60">
           <p>{settings.copyright}</p>
-          <Link href="/admin" className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-cream hover:underline">
+          <Link href="/admin" prefetch={false} className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-cream hover:underline">
             관리자
           </Link>
         </div>
