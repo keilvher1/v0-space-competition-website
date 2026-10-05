@@ -87,7 +87,12 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           { label: "오늘 방문자", value: report.today.visitors, sub: `페이지뷰 ${n(report.today.views)}` },
-          { label: `방문자 (${days}일)`, value: report.totals.visitors, sub: `하루 평균 ${avg(report.totals.visitors / days)}` },
+          {
+            label: `방문자 (${days}일)`,
+            value: report.totals.visitors,
+            // 집계를 시작한 지 기간보다 짧으면 집계한 날만으로 나눈다
+            sub: `하루 평균 ${avg(report.totals.visitors / report.trackedDays)}${report.trackedDays < days ? ` · 집계 ${report.trackedDays}일` : ""}`,
+          },
           { label: `페이지뷰 (${days}일)`, value: report.totals.views, sub: report.totals.visitors ? `방문당 ${(report.totals.views / report.totals.visitors).toFixed(1)}쪽` : "" },
           { label: `신청 버튼 클릭 (${days}일)`, value: report.totals.applies, sub: `참가 ${n(applyOf("participant"))} · 참관 ${n(applyOf("observer"))}` },
         ].map((k) => (
