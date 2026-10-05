@@ -421,10 +421,11 @@ export const EDITION_FIELDS: FieldDef[] = [
         label: "영상",
         name: "video",
         fields: [
-          { kind: "url", name: "url", label: "영상 주소", help: "Vimeo 또는 YouTube 주소" },
+          { kind: "video", name: "url", label: "영상", help: "Vimeo·YouTube 주소 또는 직접 올린 동영상" },
           { kind: "text", name: "title", label: "제목" },
           { kind: "textarea", name: "body", label: "설명", rows: 2 },
           { kind: "switch", name: "portrait", label: "세로 영상 (9:16)" },
+          { kind: "image", name: "poster", label: "미리보기 이미지 (선택)", help: "직접 올린 동영상의 재생 전 화면. 비우면 첫 장면을 보여줍니다." },
         ],
       },
       { kind: "text", name: "organizersTitle", label: "기관 섹션 제목", help: "로고는 [함께한 기관] 메뉴에서 이 회차를 선택하면 나옵니다." },

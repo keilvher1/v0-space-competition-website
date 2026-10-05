@@ -176,7 +176,7 @@ export function emptyEditionData(): EditionData {
     photos: [],
     press: [],
     features: [],
-    video: { url: "", title: "", body: "", portrait: true },
+    video: { url: "", title: "", body: "", portrait: true, poster: "" },
     organizersTitle: "함께한 기관",
   }
 }
@@ -342,6 +342,7 @@ const EDITION_2025: Edition = {
       title: "대회 소개 영상",
       body: "제1회 모집 당시 공개한 영상입니다. 대회가 던지고 싶었던 질문을 70초에 담았습니다.",
       portrait: true,
+      poster: "",
     },
     organizersTitle: "주최·주관",
   },

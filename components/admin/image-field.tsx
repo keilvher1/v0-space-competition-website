@@ -31,7 +31,7 @@ export function ImageField({ id, value, onChange }: { id: string; value: string;
   const openLibrary = async () => {
     setError(null)
     try {
-      setLibrary(await listMediaForPicker())
+      setLibrary(await listMediaForPicker("image"))
     } catch (e) {
       setError(e instanceof Error ? e.message : "라이브러리를 불러오지 못했습니다.")
     }

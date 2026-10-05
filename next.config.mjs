@@ -1,9 +1,10 @@
 // 제2회 핸드오프(public/2026)에 함께 전달된 정적 호스팅용 보안 헤더 (hosting-examples/vercel.json.example)
+// connect-src만 'self'로 넓혔다: 방문 통계(/2026/track.js → /api/collect)
 const EDITION_2026_HEADERS = [
   {
     key: 'Content-Security-Policy',
     value:
-      "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; media-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; media-src 'none'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'no-referrer' },

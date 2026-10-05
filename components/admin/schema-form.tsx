@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import type { FieldDef, SaveResult } from "./form-types"
 import { ImageField } from "./image-field"
+import { VideoField } from "./video-field"
 import { fromKstInput, toKstInput } from "@/lib/cms/utils"
 
 type Path = (string | number)[]
@@ -199,6 +200,13 @@ function Field({ field, value, onChange, path }: { field: FieldDef; value: Json;
         <div>
           <Label field={field} htmlFor={id} />
           <ImageField id={id} value={(current as string) ?? ""} onChange={set} />
+        </div>
+      )
+    case "video":
+      return (
+        <div>
+          <Label field={field} htmlFor={id} />
+          <VideoField id={id} value={(current as string) ?? ""} onChange={set} />
         </div>
       )
     case "datetime":

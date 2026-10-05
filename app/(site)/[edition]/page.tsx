@@ -10,6 +10,7 @@ import { getEdition, getEditions, getFaqs, getPartners } from "@/lib/cms/queries
 import { EditionLink } from "@/components/site/edition-link"
 import { VideoEmbed } from "@/components/site/video-embed"
 import { videoEmbedUrl, videoThumbnail } from "@/lib/cms/embed"
+import { isDirectVideo } from "@/lib/cms/video"
 import type { Edition } from "@/lib/cms/types"
 import { STATUS_LABEL, contrastOn, editionStatus, editionTheme, normalizeHex, pad2, safeHref, themeVars } from "@/lib/cms/utils"
 
@@ -144,15 +145,15 @@ function ApplySection({ edition }: { edition: Edition }) {
         <SectionTitle eyebrow="Apply" title={open ? "함께하는 방법" : "신청이 마감되었습니다"} id="apply-title" />
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           {[
-            { url: participantUrl, title: "내 실패담을 들려주고 싶다면", label: "참가 신청하기", tone: "btn-coral" },
-            { url: observerUrl, title: "듣고, 응원하고 싶다면", label: "참관 신청하기", tone: "btn-ink" },
+            { url: participantUrl, title: "내 실패담을 들려주고 싶다면", label: "참가 신청하기", tone: "btn-coral", track: "participant" },
+            { url: observerUrl, title: "듣고, 응원하고 싶다면", label: "참관 신청하기", tone: "btn-ink", track: "observer" },
           ]
             .filter((c) => c.url)
             .map((card) => (
               <div key={card.label} className="reveal flex flex-col gap-6 border-2 border-ink bg-cream p-7">
                 <h3 className="text-2xl font-extrabold tracking-[-0.03em]">{card.title}</h3>
                 {open ? (
-                  <a href={card.url ?? undefined} target="_blank" rel="noopener noreferrer" className={`btn ${card.tone} self-start`}>
+                  <a href={card.url ?? undefined} target="_blank" rel="noopener noreferrer" data-track={card.track} className={`btn ${card.tone} self-start`}>
                     {card.label} <ArrowUpRight />
                   </a>
                 ) : (
@@ -359,9 +360,13 @@ function RecordsSection({ edition }: { edition: Edition }) {
 
 async function VideoSection({ edition }: { edition: Edition }) {
   const { video } = edition.data
-  const src = video.url ? videoEmbedUrl(video.url) : null
+  const url = safeHref(video.url)
+  if (!url) return null
+  // 직접 올린 동영상은 브라우저 기본 플레이어로, 그 밖에는 Vimeo·YouTube 플레이어로 재생한다
+  const direct = isDirectVideo(url)
+  const src = direct ? url : videoEmbedUrl(url)
   if (!src) return null
-  const thumbnail = await videoThumbnail(video.url)
+  const thumbnail = safeHref(video.poster) ?? (direct ? null : await videoThumbnail(url))
   return (
     <section aria-labelledby="video-title" className="border-b-2 border-ink bg-paper py-20 md:py-24">
       <div className={`site-container grid items-center gap-12 ${video.portrait ? "md:grid-cols-[1fr_330px]" : ""}`}>
@@ -374,7 +379,7 @@ async function VideoSection({ edition }: { edition: Edition }) {
           style={{ boxShadow: "8px 8px 0 var(--key)" }}
         >
           <div className={`relative ${video.portrait ? "aspect-[9/16]" : "aspect-video"}`}>
-            <VideoEmbed src={src} title={video.title || `${edition.data.title} 영상`} thumbnail={thumbnail} />
+            <VideoEmbed src={src} kind={direct ? "file" : "embed"} title={video.title || `${edition.data.title} 영상`} thumbnail={thumbnail} />
           </div>
         </div>
       </div>
