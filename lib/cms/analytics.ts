@@ -19,8 +19,13 @@ function since(days: number) {
   return `((date_trunc('day', (now() at time zone 'UTC') + interval '9 hours') - interval '${days - 1} days' - interval '9 hours') at time zone 'UTC')`
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+const kstDate = (ms: number) => new Date(ms + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
 export interface AnalyticsReport {
   days: Range
+  /** 기간 중 실제로 집계한 날 수(집계 시작일부터 오늘까지). 하루 평균은 이 값으로 나눈다. */
+  trackedDays: number
   totals: { visitors: number; views: number; applies: number; videoPlays: number }
   today: { visitors: number; views: number }
   daily: { date: string; visitors: number; views: number }[]
@@ -77,9 +82,8 @@ export async function getAnalytics(days: Range): Promise<AnalyticsReport> {
   // 방문이 없던 날도 0으로 채운다
   const byDate = new Map((daily as Row[]).map((r) => [String(r.date), r]))
   const filled: AnalyticsReport["daily"] = []
-  const todayKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(todayKst.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    const d = kstDate(Date.now() - i * DAY_MS)
     const r = byDate.get(d)
     filled.push({ date: d, visitors: num(r?.visitors), views: num(r?.views) })
   }
@@ -87,8 +91,11 @@ export async function getAnalytics(days: Range): Promise<AnalyticsReport> {
   const t = (totals as Row[])[0] ?? {}
   const td = (today as Row[])[0] ?? {}
   const firstTs = (first as Row[])[0]?.first
+  const firstMs = firstTs ? new Date(firstTs as string | Date).getTime() : NaN
+  const sinceFirst = Number.isNaN(firstMs) ? days : Math.round((Date.parse(kstDate(Date.now())) - Date.parse(kstDate(firstMs))) / DAY_MS) + 1
   return {
     days,
+    trackedDays: Math.max(1, Math.min(days, sinceFirst)),
     totals: { visitors: num(t.visitors), views: num(t.views), applies: num(t.applies), videoPlays: num(t.video_plays) },
     today: { visitors: num(td.visitors), views: num(td.views) },
     daily: filled,
