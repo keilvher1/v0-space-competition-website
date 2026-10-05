@@ -95,7 +95,8 @@ export interface EditionData {
   photos: PhotoItem[]
   press: PressItem[]
   features: FeatureItem[]
-  video: { url: string; title: string; body: string; portrait: boolean }
+  /** url: Vimeo·YouTube 주소 또는 업로드한 동영상 파일 주소. poster: 업로드한 동영상의 미리보기 이미지(선택) */
+  video: { url: string; title: string; body: string; portrait: boolean; poster: string }
   organizersTitle: string
 }
 

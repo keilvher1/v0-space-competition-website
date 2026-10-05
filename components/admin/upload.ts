@@ -1,5 +1,9 @@
 "use client"
 
+import { uploadPresigned } from "@vercel/blob/client"
+import { registerMedia } from "@/app/admin/actions"
+import { VIDEO_MAX_BYTES, VIDEO_TYPES } from "@/lib/cms/video"
+
 const MAX_BYTES = 4 * 1024 * 1024
 const MAX_EDGE = 2560
 const RESIZABLE = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"])
@@ -53,4 +57,34 @@ export async function uploadImage(file: File): Promise<string> {
   const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
   if (!res.ok || !data.url) throw new Error(data.error ?? "업로드하지 못했습니다.")
   return data.url
+}
+
+/**
+ * 동영상은 함수 제한(4.5MB)을 피해 브라우저에서 저장소로 바로 올린다. 30MB가 넘으면 나눠 올린다.
+ * onProgress로 0~100 진행률을 알려준다.
+ */
+export async function uploadVideo(file: File, onProgress?: (percent: number) => void): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? ""
+  const type = file.type || (ext === "mov" ? "video/quicktime" : ext === "webm" ? "video/webm" : ext === "mp4" || ext === "m4v" ? "video/mp4" : "")
+  if (!(VIDEO_TYPES as readonly string[]).includes(type)) throw new Error("MP4·WebM·MOV 동영상만 올릴 수 있습니다.")
+  if (file.size > VIDEO_MAX_BYTES) throw new Error("500MB 이하 동영상만 올릴 수 있습니다.")
+  const safeName = file.name.normalize("NFC").replace(/[^\w.\-가-힣]+/g, "-").slice(-80) || "video"
+  let blob
+  try {
+    blob = await uploadPresigned(`cms/${safeName}`, file, {
+      access: "public",
+      contentType: type,
+      handleUploadUrl: "/api/admin/upload/presign",
+      clientPayload: JSON.stringify({ contentType: type, size: file.size }),
+      multipart: file.size > 30 * 1024 * 1024,
+      onUploadProgress: ({ percentage }) => onProgress?.(Math.round(percentage)),
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message.replace(/^Vercel Blob: /, "") : ""
+    if (/presigned URL/i.test(message)) throw new Error("업로드를 준비하지 못했습니다. 저장소 연결이나 파일 형식·크기를 확인해주세요.")
+    throw new Error(message || "업로드하지 못했습니다.")
+  }
+  const result = await registerMedia({ url: blob.url, pathname: blob.pathname, contentType: type, size: file.size })
+  if (!result.ok) throw new Error(result.error)
+  return blob.url
 }

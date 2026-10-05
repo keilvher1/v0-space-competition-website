@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Badge, Card, PageHeader } from "@/components/admin/ui"
 import { blobConfigured } from "@/lib/blob"
+import { getAnalyticsSummary } from "@/lib/cms/analytics"
 import { admin } from "@/lib/cms/queries"
 import { STATUS_LABEL, editionStatus } from "@/lib/cms/utils"
 
@@ -12,11 +13,11 @@ const LINKS = [
   { href: "/admin/announcements", title: "공지사항", body: "공지 작성·공개 (공개된 공지가 있으면 메뉴에 표시)" },
   { href: "/admin/faqs", title: "FAQ", body: "회차별 자주 묻는 질문" },
   { href: "/admin/partners", title: "함께한 기관", body: "로고와 참여 회차" },
-  { href: "/admin/media", title: "이미지", body: "포스터·사진·로고 업로드" },
+  { href: "/admin/media", title: "미디어", body: "포스터·사진·로고·동영상 업로드" },
 ]
 
 export default async function DashboardPage() {
-  const [counts, editions] = await Promise.all([admin.counts(), admin.editions()])
+  const [counts, editions, visits] = await Promise.all([admin.counts(), admin.editions(), getAnalyticsSummary()])
   const current = editions.find((e) => e.published)
   const blobReady = blobConfigured()
 
@@ -25,9 +26,22 @@ export default async function DashboardPage() {
       <PageHeader title="대시보드" description="저장하면 사이트에 바로 반영됩니다." />
       {!blobReady && (
         <Card className="mb-6 border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          이미지 저장소(Vercel Blob)가 연결되지 않아 이미지 업로드를 쓸 수 없습니다. 이미지 주소를 직접 입력하는 것은 가능합니다.
+          저장소(Vercel Blob)가 연결되지 않아 이미지·동영상 업로드를 쓸 수 없습니다. 주소를 직접 입력하는 것은 가능합니다.
         </Card>
       )}
+      <Link href="/admin/analytics" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white p-5 transition hover:border-ink">
+        <div className="flex gap-8">
+          <div>
+            <p className="text-xs font-bold text-ink-soft">오늘 방문자</p>
+            <p className="mt-1 font-display text-3xl font-bold tabular-nums">{visits.today.toLocaleString("ko-KR")}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-ink-soft">최근 7일 방문자</p>
+            <p className="mt-1 font-display text-3xl font-bold tabular-nums">{visits.week.toLocaleString("ko-KR")}</p>
+          </div>
+        </div>
+        <span className="text-sm font-bold">방문 통계 보기 →</span>
+      </Link>
       {current && (
         <Card className="mb-6 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -51,7 +65,7 @@ export default async function DashboardPage() {
           ["공지", counts.announcements],
           ["FAQ", counts.faqs],
           ["기관", counts.partners],
-          ["이미지", counts.media],
+          ["미디어", counts.media],
         ].map(([label, n]) => (
           <Card key={label} className="p-4">
             <dt className="text-xs font-bold text-ink-soft">{label}</dt>

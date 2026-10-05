@@ -36,12 +36,12 @@ const isoOrNull = (v: unknown) => {
 }
 const safeLink = (v: unknown) => safeHref(str(v, 2000)) ?? ""
 
-/** 내용 안의 주소 칸(url, …Url, ogImage)을 모두 안전한 주소만 남긴다. javascript: 같은 값은 비운다. */
+/** 내용 안의 주소 칸(url, …Url, ogImage, poster)을 모두 안전한 주소만 남긴다. javascript: 같은 값은 비운다. */
 function cleanUrls<T>(value: T): T {
   if (Array.isArray(value)) return value.map(cleanUrls) as T
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([key, v]) => [key, typeof v === "string" && /^(url|.+Url|ogImage)$/.test(key) ? safeLink(v) : cleanUrls(v)]),
+      Object.entries(value).map(([key, v]) => [key, typeof v === "string" && /^(url|.+Url|ogImage|poster)$/.test(key) ? safeLink(v) : cleanUrls(v)]),
     ) as T
   }
   return value
@@ -272,9 +272,38 @@ export async function deletePartner(id: string): Promise<SaveResult> {
 
 // ── 이미지 라이브러리 ───────────────────────────────────
 
-export async function listMediaForPicker() {
+/** 우리 Blob 저장소의 공개 주소 호스트(BLOB_STORE_ID 또는 읽기·쓰기 토큰에서) */
+function blobHost() {
+  const id = process.env.BLOB_STORE_ID?.replace(/^store_/i, "") || process.env.BLOB_READ_WRITE_TOKEN?.split("_")[3]
+  return id ? `${id.toLowerCase()}.public.blob.vercel-storage.com` : null
+}
+
+/** 브라우저가 저장소로 바로 올린 파일(동영상)을 미디어 목록에 등록한다. 우리 저장소의 파일만 받는다. */
+export async function registerMedia(input: { url: string; pathname: string; contentType: string; size: number }): Promise<SaveResult> {
+  return run(async () => {
+    let url: URL
+    try {
+      url = new URL(str(input.url, 2000))
+    } catch {
+      return { ok: false, error: "잘못된 파일 주소입니다." }
+    }
+    const host = blobHost()
+    const ours = url.protocol === "https:" && (host ? url.hostname === host : url.hostname.endsWith(".public.blob.vercel-storage.com"))
+    const pathname = str(input.pathname, 500)
+    const contentType = str(input.contentType, 100)
+    if (!ours || !pathname.startsWith("cms/") || !/^(image|video)\//.test(contentType)) return { ok: false, error: "등록할 수 없는 파일입니다." }
+    await query(
+      `insert into cms_media (url, pathname, content_type, size) values ($1,$2,$3,$4) on conflict (url) do nothing`,
+      [url.toString(), pathname, contentType, Math.max(0, int(input.size) || 0)],
+    )
+    return { ok: true }
+  })
+}
+
+export async function listMediaForPicker(kind?: "image" | "video") {
   await assertAdmin()
-  return adminQueries.media()
+  const items = await adminQueries.media()
+  return kind ? items.filter((m) => m.contentType.startsWith(`${kind}/`)) : items
 }
 
 export async function deleteMedia(id: string): Promise<SaveResult> {

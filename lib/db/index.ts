@@ -107,6 +107,20 @@ create table if not exists cms_media (
   alt text not null default '',
   created_at timestamptz not null default now()
 );
+-- 방문 통계(자체 수집). IP는 저장하지 않고, 하루마다 바뀌는 익명 방문자 값만 남긴다.
+create table if not exists cms_hits (
+  id bigserial primary key,
+  ts timestamptz not null default now(),
+  kind text not null,
+  name text not null default '',
+  label text not null default '',
+  path text not null default '/',
+  referrer text not null default '',
+  visitor text not null default '',
+  device text not null default '',
+  country text not null default ''
+);
+create index if not exists cms_hits_ts on cms_hits (ts);
 `
 
 async function count(client: PoolClient, table: string) {

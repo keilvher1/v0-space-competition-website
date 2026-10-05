@@ -10,6 +10,7 @@ export type FieldDef =
   | (Base & { kind: "number"; placeholder?: string })
   | (Base & { kind: "color" })
   | (Base & { kind: "image" })
+  | (Base & { kind: "video" })
   | (Base & { kind: "datetime" })
   | (Base & { kind: "switch" })
   | (Base & { kind: "select"; options: Option[] })

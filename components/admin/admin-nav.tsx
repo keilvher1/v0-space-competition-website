@@ -7,12 +7,13 @@ import { logoutAction } from "@/app/admin/actions"
 
 const NAV = [
   { href: "/admin", label: "대시보드" },
+  { href: "/admin/analytics", label: "방문 통계" },
   { href: "/admin/settings", label: "사이트 설정" },
   { href: "/admin/editions", label: "회차" },
   { href: "/admin/announcements", label: "공지사항" },
   { href: "/admin/faqs", label: "FAQ" },
   { href: "/admin/partners", label: "함께한 기관" },
-  { href: "/admin/media", label: "이미지" },
+  { href: "/admin/media", label: "미디어" },
   { href: "/admin/users", label: "관리자 계정" },
 ]
 
