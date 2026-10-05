@@ -148,7 +148,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     },
   },
   contact: { label: "행사 문의", email: "jyjpeter79@gmail.com" },
-  host: "한동대학교 IRIS · 심규진 교수 리빙랩 프로젝트",
+  host: "한동대학교 심규진 교수",
   copyright: "© 2025–2026 우주최고실패대회",
 }
 
